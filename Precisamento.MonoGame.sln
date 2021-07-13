@@ -5,7 +5,12 @@ VisualStudioVersion = 16.0.31025.218
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Precisamento.MonoGame", "Precisamento.MonoGame\Precisamento.MonoGame.csproj", "{02FDBF68-ED7C-44CC-8243-9EAE5689013F}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharpMath2", "SharpMath2\SharpMath2.shproj", "{53290E9B-7A54-4098-AB3D-E936D93BDF97}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		SharpMath2\SharpMath2.projitems*{53290e9b-7a54-4098-ab3d-e936d93bdf97}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

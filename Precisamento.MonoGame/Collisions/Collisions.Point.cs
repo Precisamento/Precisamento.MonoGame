@@ -84,5 +84,66 @@ namespace Precisamento.MonoGame.Collisions
 
         public static bool PointToLine(Vector2 point, Vector2 lineStart, Vector2 lineEnd) 
             => Vector2.Distance(lineStart, point) + Vector2.Distance(point, lineEnd) == Vector2.Distance(lineStart, lineEnd);
+
+        // Todo: Set a RaycastHit instead?
+
+        public static bool PointToLine(PointCollider point, LineCollider line, out CollisionResult result)
+            => PointToLine(point.Position, line.Start + line.Position, line.End + line.Position, out result);
+
+        public static bool PointToLine(Vector2 point, LineCollider line, out CollisionResult result)
+            => PointToLine(point, line.Start + line.Position, line.End + line.Position, out result);
+
+        public static bool PointToLine(PointCollider point, Vector2 lineStart, Vector2 lineEnd, out CollisionResult result)
+            => PointToLine(point.Position, lineStart, lineEnd, out result);
+
+        public static bool PointToLine(Vector2 point, Vector2 lineStart, Vector2 lineEnd, out CollisionResult result)
+        {
+            if(PointToLine(point, lineStart, lineEnd))
+            {
+                var perp = Vector2Ext.Perpendicular(ref lineStart, ref lineEnd);
+                perp.Normalize();
+
+                result = new CollisionResult()
+                {
+                    MinimumTranslationVector = perp,
+                    Normal = perp,
+                    Point = point
+                };
+
+                return true;
+            }
+
+            result = default;
+            return false;
+        }
+
+        public static bool PointToPoint(PointCollider p1, PointCollider p2, out CollisionResult result)
+            => PointToPoint(p1.Position, p2.Position, out result);
+
+        public static bool PointToPoint(PointCollider p1, Vector2 p2, out CollisionResult result)
+            => PointToPoint(p1.Position, p2, out result);
+
+        public static bool PointToPoint(Vector2 p1, PointCollider p2, out CollisionResult result)
+            => PointToPoint(p1, p2.Position, out result);
+
+        public static bool PointToPoint(Vector2 p1, Vector2 p2, out CollisionResult result)
+        {
+            if (p1 != p2)
+            {
+                result = default;
+                return false;
+            }
+
+            // Todo: Does this logic check out?
+            Vector2 mtv = new Vector2(0, -1);
+            result = new CollisionResult()
+            {
+                MinimumTranslationVector = mtv,
+                Normal = mtv,
+                Point = p1
+            };
+
+            return true;
+        }
     }
 }

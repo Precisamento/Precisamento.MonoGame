@@ -1,11 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
+using MonoGame.Extended.Shapes;
 using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.MathHelpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Precisamento.MonoGame.Collisions
@@ -87,6 +89,7 @@ namespace Precisamento.MonoGame.Collisions
             {
                 if(value != _scale)
                 {
+                    AssertScale(value);
                     _scale = value;
                     _dirty = true;
                 }
@@ -94,6 +97,8 @@ namespace Precisamento.MonoGame.Collisions
         }
 
         public bool IsUnrotated => _rotation == 0;
+
+        public override ColliderType ColliderType => ColliderType.Polygon;
 
         public PolygonCollider(Vector2[] points)
             : this(points, Vector2.Zero) 
@@ -117,6 +122,9 @@ namespace Precisamento.MonoGame.Collisions
             var maxX = float.MinValue;
             var maxY = float.MinValue;
 
+            // The branches here are used to avoid having to iterate over the points array more than once.
+            // It makes sure to perform all operations at the same.
+
             if(_scale != 1f && _rotation != 0)
             {
                 var cos = MathF.Cos(_rotation);
@@ -136,6 +144,8 @@ namespace Precisamento.MonoGame.Collisions
                         minY = _points[i].Y;
                     if (maxY < _points[i].Y)
                         maxY = _points[i].Y;
+
+                    SetEdgeNormal(i);
                 }
             }
             else if(_scale != 1f)
@@ -154,6 +164,8 @@ namespace Precisamento.MonoGame.Collisions
                         minY = _points[i].Y;
                     if (maxY < _points[i].Y)
                         maxY = _points[i].Y;
+
+                    SetEdgeNormal(i);
                 }
             }
             else if(_rotation != 0)
@@ -174,6 +186,8 @@ namespace Precisamento.MonoGame.Collisions
                         minY = _points[i].Y;
                     if (maxY < _points[i].Y)
                         maxY = _points[i].Y;
+
+                    SetEdgeNormal(i);
                 }
             }
             else
@@ -190,28 +204,29 @@ namespace Precisamento.MonoGame.Collisions
                         minY = _points[i].Y;
                     if (maxY < _points[i].Y)
                         maxY = _points[i].Y;
+
+                    SetEdgeNormal(i);
                 }
             }
 
             _boundingBox = new RectangleF(minX, minY, maxX - minX, maxY - minY);
-            BuildEdgeNormals();
         }
 
-        private void BuildEdgeNormals()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SetEdgeNormal(int index)
         {
-            Vector2 p2;
-            Vector2 p1;
-            for (var i = 0; i < _points.Length; i++)
-            {
-                p1 = _points[i];
-                if (i + 1 >= _points.Length)
-                    p2 = _points[0];
-                else
-                    p2 = _points[i + 1];
+            if (index == 0)
+                return;
 
-                var perp = Vector2Ext.Perpendicular(ref p1, ref p2);
+            var perp = Vector2Ext.Perpendicular(ref _points[index - 1], ref _points[index]);
+            Vector2Ext.Normalize(ref perp);
+            _edgeNormals[index - 1] = perp;
+
+            if(index == _points.Length - 1)
+            {
+                perp = Vector2Ext.Perpendicular(ref _points[index], ref _points[0]);
                 Vector2Ext.Normalize(ref perp);
-                _edgeNormals[i] = perp;
+                _edgeNormals[index] = perp;
             }
         }
 
@@ -414,6 +429,70 @@ namespace Precisamento.MonoGame.Collisions
                 s.Push(p);
                 return ret;
             }
+        }
+
+        public override bool Overlaps(Collider other)
+        {
+            switch(other.ColliderType)
+            {
+                case ColliderType.Point:
+                    var point = (PointCollider)other;
+                    if (point.InternalCollider != point)
+                        return Overlaps(point.InternalCollider);
+                    return ContainsPoint(point.Position);
+                case ColliderType.Line:
+                    return Collisions.LineToPoly((LineCollider)other, this);
+                case ColliderType.Circle:
+                    return Collisions.CircleToPolygon((CircleCollider)other, this);
+                case ColliderType.Box:
+                case ColliderType.Polygon:
+                    return Collisions.PolygonToPolygon(this, (PolygonCollider)other);
+            }
+
+            throw new NotImplementedException($"Overlaps of Polygon to {other.GetType()} are not supported.");
+        }
+
+        public override bool CollidesWithShape(Collider other, out CollisionResult collision, out RaycastHit ray)
+        {
+            ray = default;
+            switch (other.ColliderType)
+            {
+                case ColliderType.Point:
+                    var point = (PointCollider)other;
+                    if (point.InternalCollider != point)
+                        return CollidesWithShape(point.InternalCollider, out collision, out ray);
+                    return Collisions.PointToPoly(point.Position, this, out collision);
+                case ColliderType.Line:
+                    collision = default;
+                    return Collisions.LineToPoly((LineCollider)other, this, out ray);
+                case ColliderType.Circle:
+                    return Collisions.CircleToPolygon((CircleCollider)other, this, out collision);
+                case ColliderType.Box:
+                case ColliderType.Polygon:
+                    return Collisions.PolygonToPolygon(this, (PolygonCollider)other, out collision);
+            }
+
+            throw new NotImplementedException($"Collisions of Polygon to {other.GetType()} are not supported.");
+        }
+
+        public override bool CollidesWithLine(Vector2 start, Vector2 end)
+        {
+            return Collisions.LineToPoly(start, end, this);
+        }
+
+        public override bool CollidesWithLine(Vector2 start, Vector2 end, out RaycastHit hit)
+        {
+            return Collisions.LineToPoly(start, end, this, out hit);
+        }
+
+        public override bool ContainsPoint(Vector2 point)
+        {
+            return Collisions.PointToPoly(point, this);
+        }
+
+        public override bool CollidesWithPoint(Vector2 point, out CollisionResult result)
+        {
+            return Collisions.PointToPoly(point, this, out result);
         }
     }
 }

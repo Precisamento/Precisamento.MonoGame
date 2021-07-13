@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.Collections;
+using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.MathHelpers;
 using System;
 using System.Collections.Generic;
@@ -29,7 +30,7 @@ namespace Precisamento.MonoGame.Collisions
         private Vector2 _start;
         private Vector2 _end;
 
-        public override float Rotation 
+        public override float Rotation
         {
             get => _rotation;
             set
@@ -58,7 +59,7 @@ namespace Precisamento.MonoGame.Collisions
 
         public override Vector2 Position { get; set; }
 
-        public override RectangleF BoundingBox 
+        public override RectangleF BoundingBox
         {
             get
             {
@@ -146,7 +147,79 @@ namespace Precisamento.MonoGame.Collisions
             }
         }
 
-        public override void DebugDraw(SpriteBatch spriteBatch, Color color) => throw new NotImplementedException();
+        public override ColliderType ColliderType => ColliderType.Line;
+
+        public override bool Overlaps(Collider other)
+        {
+            switch(other.ColliderType)
+            {
+                case ColliderType.Point:
+                    var point = (PointCollider)other;
+                    if (point.InternalCollider != point)
+                        return Overlaps(point.InternalCollider);
+                    return Collisions.PointToLine(point, this);
+                case ColliderType.Line:
+                    var line = (LineCollider)other;
+                    return Collisions.LineToLine(this, line.AdjustedStart, line.AdjustedEnd);
+                case ColliderType.Circle:
+                    return Collisions.LineToCircle(this, (CircleCollider)other);
+                case ColliderType.Box:
+                case ColliderType.Polygon:
+                    return Collisions.LineToPoly(this, (PolygonCollider)other);
+            }
+
+            throw new NotImplementedException($"Overlaps of Line to {other.GetType()} are not supported.");
+        }
+
+        public override bool CollidesWithShape(Collider other, out CollisionResult collision, out RaycastHit ray)
+        {
+            collision = default;
+
+            switch (other.ColliderType)
+            {
+                case ColliderType.Point:
+                    var point = (PointCollider)other;
+                    if (point.InternalCollider != point)
+                        return CollidesWithShape(point.InternalCollider, out collision, out ray);
+                    ray = default;
+                    return Collisions.PointToLine(point, this, out collision);
+                case ColliderType.Line:
+                    var line = (LineCollider)other;
+                    ray = default;
+                    return Collisions.LineToLine(this, line.AdjustedStart, line.AdjustedEnd, out collision);
+                case ColliderType.Circle:
+                    return Collisions.LineToCircle(this, (CircleCollider)other, out ray);
+                case ColliderType.Box:
+                case ColliderType.Polygon:
+                    return Collisions.LineToPoly(this, (PolygonCollider)other, out ray);
+            }
+
+            throw new NotImplementedException($"Overlaps of Line to {other.GetType()} are not supported.");
+        }
+
+        public override bool CollidesWithLine(Vector2 start, Vector2 end)
+        {
+            return Collisions.LineToLine(this, start, end);
+        }
+
+        public override bool CollidesWithLine(Vector2 start, Vector2 end, out RaycastHit hit)
+        {
+            hit = default;
+            return Collisions.LineToLine(this, start, end);
+        }
+
+        public override bool ContainsPoint(Vector2 point)
+        {
+            return Collisions.PointToLine(point, this);
+        }
+
+        public override bool CollidesWithPoint(Vector2 point, out CollisionResult result)
+        {
+            return Collisions.PointToLine(point, this, out result);
+        }
+
+        public override void DebugDraw(SpriteBatch spriteBatch, Color color) =>
+            spriteBatch.DrawLine(_start, _end, color);
 
         private void Clean()
         {

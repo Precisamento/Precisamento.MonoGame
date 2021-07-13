@@ -137,10 +137,10 @@ namespace Precisamento.MonoGame.Collisions
         }
 
         public static bool LineToLine(LineCollider line, Vector2 b1, Vector2 b2)
-            => LineToLine(line.Start, line.End, b1, b2);
+            => LineToLine(line.AdjustedStart, line.AdjustedEnd, b1, b2);
 
         public static bool LineToLine(Vector2 a1, Vector2 a2, LineCollider line)
-            => LineToLine(a1, a2, line.Start, line.End);
+            => LineToLine(a1, a2, line.AdjustedStart, line.AdjustedEnd);
 
         public static bool LineToLine(Vector2 a1, Vector2 a2, Vector2 b1, Vector2 b2)
         {
@@ -165,10 +165,10 @@ namespace Precisamento.MonoGame.Collisions
         }
 
         public static bool LineToLine(LineCollider line, Vector2 b1, Vector2 b2, out Vector2 intersection)
-            => LineToLine(line.Start, line.End, b1, b2, out intersection);
+            => LineToLine(line.AdjustedStart, line.AdjustedEnd, b1, b2, out intersection);
 
         public static bool LineToLine(Vector2 a1, Vector2 a2, LineCollider line, out Vector2 intersection)
-            => LineToLine(a1, a2, line.Start, line.End, out intersection);
+            => LineToLine(a1, a2, line.AdjustedStart, line.AdjustedEnd, out intersection);
 
         public static bool LineToLine(Vector2 a1, Vector2 a2, Vector2 b1, Vector2 b2, out Vector2 intersection)
         {
@@ -192,6 +192,57 @@ namespace Precisamento.MonoGame.Collisions
                 return false;
 
             intersection = a1 + t * b;
+
+            return true;
+        }
+
+        // Todo: Should the collision result be a raycast hit instead?
+
+        public static bool LineToLine(LineCollider line, Vector2 b1, Vector2 b2, out CollisionResult result)
+            => LineToLine(line.AdjustedStart, line.AdjustedEnd, b1, b2, out result);
+
+        public static bool LineToLine(Vector2 a1, Vector2 a2, LineCollider line, out CollisionResult result)
+            => LineToLine(a1, a2, line.AdjustedStart, line.AdjustedEnd, out result);
+
+        public static bool LineToLine(Vector2 a1, Vector2 a2, Vector2 b1, Vector2 b2, out CollisionResult result)
+        {
+            if (!LineToLine(a1, a2, b1, b2, out Vector2 intersection))
+            {
+                result = default;
+                return false;
+            }
+
+            Vector2 minVector = a1;
+            Vector2.DistanceSquared(ref intersection, ref a1, out var minDistance);
+
+            Vector2.DistanceSquared(ref intersection, ref a2, out var nextDistance);
+            if(nextDistance < minDistance)
+            {
+                minDistance = nextDistance;
+                minVector = a2;
+            }
+
+            Vector2.DistanceSquared(ref intersection, ref b1, out nextDistance);
+            if (nextDistance < minDistance)
+            {
+                minDistance = nextDistance;
+                minVector = b1;
+            }
+
+            Vector2.DistanceSquared(ref intersection, ref b2, out nextDistance);
+            if (nextDistance < minDistance)
+            {
+                minDistance = nextDistance;
+                minVector = b2;
+            }
+
+            Vector2 mtv = minVector - intersection;
+            result = new CollisionResult()
+            {
+                MinimumTranslationVector = mtv,
+                Point = intersection
+            };
+            Vector2.Normalize(ref mtv, out result.Normal);
 
             return true;
         }

@@ -4,6 +4,7 @@ using MonoGame.Extended;
 using Precisamento.MonoGame.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace Precisamento.MonoGame.Collisions
@@ -73,8 +74,113 @@ namespace Precisamento.MonoGame.Collisions
 
         public override RectangleF BoundingBox => new RectangleF(Position, new Size2(1, 1));
 
-        public override void DebugDraw(SpriteBatch spriteBatch, Color color) 
-            => spriteBatch.DrawPoint(Position, color);
+        public override ColliderType ColliderType => ColliderType.Point;
+
+        public override bool Overlaps(Collider other)
+        {
+            if (InternalCollider != this)
+                return InternalCollider.Overlaps(other);
+
+            switch(other.ColliderType)
+            {
+                case ColliderType.Point:
+                    var point = (PointCollider)other;
+                    if (point.InternalCollider != point)
+                        return point.InternalCollider.ContainsPoint(Position);
+
+                    return Position == point.Position;
+                case ColliderType.Line:
+                    return Collisions.PointToLine(this, (LineCollider)other);
+                case ColliderType.Circle:
+                    return Collisions.PointToCircle(Position, (CircleCollider)other);
+                case ColliderType.Box:
+                    var box = (BoxCollider)other;
+                    if (box.IsUnrotated)
+                        return box.BoundingBox.Contains(Position);
+                    else
+                        return Collisions.PointToPoly(Position, box);
+                case ColliderType.Polygon:
+                    return Collisions.PointToPoly(Position, (PolygonCollider)other);
+            }
+
+            throw new NotImplementedException($"Overlaps of Point to {other.GetType()} are not supported.");
+        }
+
+        public override bool CollidesWithShape(Collider other, out CollisionResult collision, out RaycastHit ray)
+        {
+            ray = default;
+            if (InternalCollider != this)
+                return InternalCollider.CollidesWithShape(other, out collision, out ray);
+
+            switch (other.ColliderType)
+            {
+                case ColliderType.Point:
+                    var point = (PointCollider)other;
+                    if (point.InternalCollider != point)
+                        return point.InternalCollider.CollidesWithPoint(Position, out collision);
+
+                    return Collisions.PointToPoint(this, point, out collision);
+                case ColliderType.Line:
+                    return Collisions.PointToLine(this, (LineCollider)other, out collision);
+                case ColliderType.Circle:
+                    return Collisions.PointToCircle(Position, (CircleCollider)other, out collision);
+                case ColliderType.Box:
+                    var box = (BoxCollider)other;
+                    if (box.IsUnrotated)
+                        return Collisions.PointToBox(Position, box, out collision);
+                    else
+                        return Collisions.PointToPoly(Position, box, out collision);
+                case ColliderType.Polygon:
+                    return Collisions.PointToPoly(Position, (PolygonCollider)other, out collision);
+            }
+
+            throw new NotImplementedException($"Collisions of Point to {other.GetType()} are not supported.");
+        }
+
+        public override bool CollidesWithLine(Vector2 start, Vector2 end)
+        {
+            if (InternalCollider != this)
+                return InternalCollider.CollidesWithLine(start, end);
+            else
+                return Collisions.PointToLine(Position, start, end);
+        }
+
+        public override bool CollidesWithLine(Vector2 start, Vector2 end, out RaycastHit hit)
+        {
+            if(InternalCollider != this)
+            {
+                return InternalCollider.CollidesWithLine(start, end, out hit);
+            }
+            else
+            {
+                hit = default;
+                return Collisions.PointToLine(Position, start, end);
+            }
+        }
+
+        public override bool ContainsPoint(Vector2 point)
+        {
+            if (InternalCollider != this)
+                return InternalCollider.ContainsPoint(point);
+            else
+                return Position == point;
+        }
+
+        public override bool CollidesWithPoint(Vector2 point, out CollisionResult result)
+        {
+            if (InternalCollider != this)
+                return InternalCollider.CollidesWithPoint(point, out result);
+            else
+                return Collisions.PointToPoint(this, point, out result);
+        }
+
+        public override void DebugDraw(SpriteBatch spriteBatch, Color color)
+        {
+            if (InternalCollider != this)
+                InternalCollider.DebugDraw(spriteBatch, color);
+            else
+                spriteBatch.DrawPoint(Position, color);
+        }
 
         private void Clean()
         {

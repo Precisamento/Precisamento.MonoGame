@@ -16,7 +16,6 @@ namespace Precisamento.MonoGame.Collisions
         private Vector2 _position;
         private bool _dirty;
         private float _scale = 1;
-        private float _rotation;
 
         public override ColliderType ColliderType => ColliderType.Circle;
 
@@ -33,7 +32,7 @@ namespace Precisamento.MonoGame.Collisions
             }
         }
 
-        public override Vector2 Position 
+        public override Vector2 Position
         {
             get => _position;
             set
@@ -56,7 +55,7 @@ namespace Precisamento.MonoGame.Collisions
             }
         }
 
-        public override float Scale 
+        public override float Scale
         {
             get => _scale;
             set
@@ -70,14 +69,11 @@ namespace Precisamento.MonoGame.Collisions
             }
         }
 
-        public override float Rotation 
-        {
-            get => _rotation;
-            set => _rotation = value;
-        }
+        // Rotation is a noop with circle colliders.
+        public override float Rotation { get; set; }
 
         public override RectangleF BoundingBox
-        { 
+        {
             get
             {
                 if (_dirty)
@@ -100,7 +96,11 @@ namespace Precisamento.MonoGame.Collisions
                 case ColliderType.Circle:
                     return Collisions.CircleToCircle(this, (CircleCollider)other);
                 case ColliderType.Box:
-                    return Collisions.CircleToBox(this, (BoxCollider)other);
+                    var box = (BoxCollider)other;
+                    if (box.IsUnrotated)
+                        return Collisions.CircleToBox(this, (BoxCollider)other);
+                    else
+                        return Collisions.CircleToPolygon(this, box);
                 case ColliderType.Polygon:
                     return Collisions.CircleToPolygon(this, (PolygonCollider)other);
             }
@@ -124,7 +124,11 @@ namespace Precisamento.MonoGame.Collisions
                 case ColliderType.Circle:
                     return Collisions.CircleToCircle(this, (CircleCollider)other, out collision);
                 case ColliderType.Box:
-                    return Collisions.CircleToBox(this, (BoxCollider)other, out collision);
+                    var box = (BoxCollider)other;
+                    if (box.IsUnrotated)
+                        return Collisions.CircleToBox(this, (BoxCollider)other, out collision);
+                    else
+                        return Collisions.CircleToPolygon(this, box, out collision);
                 case ColliderType.Polygon:
                     return Collisions.CircleToPolygon(this, (PolygonCollider)other, out collision);
             }
