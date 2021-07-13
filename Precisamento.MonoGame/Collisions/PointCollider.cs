@@ -137,6 +137,22 @@ namespace Precisamento.MonoGame.Collisions
             throw new NotImplementedException($"Collisions of Point to {other.GetType()} are not supported.");
         }
 
+        public override bool CollidesWithRect(RectangleF rect)
+        {
+            if (InternalCollider != this)
+                return InternalCollider.CollidesWithRect(rect);
+            else
+                return rect.Contains(Position);
+        }
+
+        public override bool CollidesWithRect(RectangleF rect, out CollisionResult result)
+        {
+            if (InternalCollider != this)
+                return InternalCollider.CollidesWithRect(rect, out result);
+            else
+                return Collisions.PointToBox(Position, rect, out result);
+        }
+
         public override bool CollidesWithLine(Vector2 start, Vector2 end)
         {
             if (InternalCollider != this)

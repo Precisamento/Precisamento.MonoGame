@@ -28,7 +28,6 @@ namespace Precisamento.MonoGame.Collisions
 
                 // Find the projection of the polygon on the current axis
                 float minA = 0; float minB = 0; float maxA = 0; float maxB = 0;
-                var intervalDist = 0f;
                 GetInterval(axis, first, ref minA, ref maxA);
                 GetInterval(axis, second, ref minB, ref maxB);
 
@@ -38,7 +37,7 @@ namespace Precisamento.MonoGame.Collisions
                 maxA += relativeIntervalOffset;
 
                 // check if the polygon projections are currentlty intersecting
-                intervalDist = IntervalDistance(minA, maxA, minB, maxB);
+                float intervalDist = IntervalDistance(minA, maxA, minB, maxB);
                 if (intervalDist > 0)
                     isIntersecting = false;
 
@@ -80,7 +79,6 @@ namespace Precisamento.MonoGame.Collisions
 
                 // Find the projection of the polygon on the current axis
                 float minA = 0; float minB = 0; float maxA = 0; float maxB = 0;
-                var intervalDist = 0f;
                 GetInterval(axis, first, ref minA, ref maxA);
                 GetInterval(axis, second, ref minB, ref maxB);
 
@@ -90,7 +88,7 @@ namespace Precisamento.MonoGame.Collisions
                 maxA += relativeIntervalOffset;
 
                 // check if the polygon projections are currentlty intersecting
-                intervalDist = IntervalDistance(minA, maxA, minB, maxB);
+                float intervalDist = IntervalDistance(minA, maxA, minB, maxB);
                 if (intervalDist > 0)
                     isIntersecting = false;
 

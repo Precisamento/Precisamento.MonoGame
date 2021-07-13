@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 using Precisamento.MonoGame.MathHelpers;
 using System;
 using System.Collections.Generic;
@@ -66,6 +67,21 @@ namespace Precisamento.MonoGame.Collisions
 
                 result.MinimumTranslationVector = result.Normal * MathF.Sqrt(distanceSquared);
                 result.Point = closestPoint + poly.Position;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool PointToBox(Vector2 point, RectangleF rect, out CollisionResult result)
+        {
+            result = new CollisionResult();
+
+            if(rect.Contains(point))
+            {
+                result.Point = rect.GetClosestPointOnBorderToPoint(point, out result.Normal);
+                result.MinimumTranslationVector = result.Normal * Vector2.Distance(result.Point, point);
 
                 return true;
             }

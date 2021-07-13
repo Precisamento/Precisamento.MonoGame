@@ -29,6 +29,7 @@ namespace Precisamento.MonoGame.Collisions
         private Vector2 _originalEnd;
         private Vector2 _start;
         private Vector2 _end;
+        private Vector2 _position;
 
         public override float Rotation
         {
@@ -51,13 +52,24 @@ namespace Precisamento.MonoGame.Collisions
                 if(value != _scale)
                 {
                     AssertScale(value);
+
                     _scale = value;
                     _dirty = true;
                 }
             }
         }
 
-        public override Vector2 Position { get; set; }
+        public override Vector2 Position
+        {
+            get => _position;
+            set
+            {
+                if(value != _position)
+                {
+                    _position = value;
+                }
+            }
+        }
 
         public override RectangleF BoundingBox
         {

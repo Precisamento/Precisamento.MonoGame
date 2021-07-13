@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 using Precisamento.MonoGame.MathHelpers;
 using System;
 using System.Collections.Generic;
@@ -38,11 +39,17 @@ namespace Precisamento.MonoGame.Collisions
         }
 
         public static bool CircleToBox(CircleCollider circle, BoxCollider box)
+            => CircleToBox(circle, box.BoundingBox);
+
+        public static bool CircleToBox(CircleCollider circle, BoxCollider box, out CollisionResult result)
+            => CircleToBox(circle, box.BoundingBox, out result);
+
+        public static bool CircleToBox(CircleCollider circle, RectangleF rect)
         {
-            if (box.ContainsPoint(circle.Position))
+            if (rect.Contains(circle.Position))
                 return true;
 
-            var closestPointOnBounds = box.BoundingBox.GetClosestPointOnBorderToPoint(circle.Position);
+            var closestPointOnBounds = rect.GetClosestPointOnBorderToPoint(circle.Position);
 
             float sqrDistance = Vector2.DistanceSquared(closestPointOnBounds, circle.Position);
 
@@ -53,14 +60,14 @@ namespace Precisamento.MonoGame.Collisions
             return false;
         }
 
-        public static bool CircleToBox(CircleCollider circle, BoxCollider box, out CollisionResult result)
+        public static bool CircleToBox(CircleCollider circle, RectangleF rect, out CollisionResult result)
         {
             result = new CollisionResult();
 
-            var closestPointOnBounds = box.BoundingBox.GetClosestPointOnBorderToPoint(circle.Position, out result.Normal);
+            var closestPointOnBounds = rect.GetClosestPointOnBorderToPoint(circle.Position, out result.Normal);
 
             // deal with circles whos center is in the box first since its cheaper to see if we are contained
-            if (box.ContainsPoint(circle.Position))
+            if (rect.Contains(circle.Position))
             {
                 result.Point = closestPointOnBounds;
 

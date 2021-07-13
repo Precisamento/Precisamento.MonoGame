@@ -69,17 +69,22 @@ namespace Precisamento.MonoGame.Collisions
             }
         }
 
-        public Vector2 Center
+        public Vector2 OriginalCenter
         {
-            get => _center;
+            get => _originalCenter;
             set
             {
-                if(value != _center)
+                if(value != _originalCenter)
                 {
-                    _center = value;
+                    _originalCenter = value;
                     _dirty = true;
                 }
             }
+        }
+
+        public Vector2 Center
+        {
+            get => _originalCenter * _scale;
         }
 
         public override float Scale
@@ -110,7 +115,7 @@ namespace Precisamento.MonoGame.Collisions
             _originalPoints = new Vector2[points.Length];
             _points = new Vector2[points.Length];
             _edgeNormals = new Vector2[points.Length];
-            _center = center;
+            _center = _originalCenter = center;
             Array.Copy(points, _originalPoints, points.Length);
         }
 

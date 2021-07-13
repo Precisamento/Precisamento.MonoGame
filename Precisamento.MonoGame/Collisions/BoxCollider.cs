@@ -133,6 +133,22 @@ namespace Precisamento.MonoGame.Collisions
             return base.CollidesWithShape(other, out collision, out ray);
         }
 
+        public override bool CollidesWithRect(RectangleF rect)
+        {
+            if (IsUnrotated)
+                return BoundingBox.Intersects(rect);
+            else
+                return base.CollidesWithRect(rect);
+        }
+
+        public override bool CollidesWithRect(RectangleF rect, out CollisionResult result)
+        {
+            if (IsUnrotated)
+                return Collisions.BoxToBox(this, rect, out result);
+            else
+                return base.CollidesWithRect(rect, out result);
+        }
+
         public override bool ContainsPoint(Vector2 point)
         {
             if (IsUnrotated)

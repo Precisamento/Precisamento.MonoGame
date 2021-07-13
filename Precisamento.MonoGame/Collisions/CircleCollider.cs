@@ -63,6 +63,7 @@ namespace Precisamento.MonoGame.Collisions
                 if(value != _scale)
                 {
                     AssertScale(value);
+                    
                     _scale = value;
                     _dirty = true;
                 }
@@ -136,7 +137,13 @@ namespace Precisamento.MonoGame.Collisions
             throw new NotImplementedException($"Overlaps of Circle to {other.GetType()} are not supported.");
         }
 
-        public override bool CollidesWithLine(Vector2 start, Vector2 end) 
+        public override bool CollidesWithRect(RectangleF rect)
+            => Collisions.CircleToBox(this, rect);
+
+        public override bool CollidesWithRect(RectangleF rect, out CollisionResult result)
+            => Collisions.CircleToBox(this, rect, out result);
+
+        public override bool CollidesWithLine(Vector2 start, Vector2 end)
             => Collisions.LineToCircle(start, end, this);
 
         public override bool CollidesWithLine(Vector2 start, Vector2 end, out RaycastHit hit)

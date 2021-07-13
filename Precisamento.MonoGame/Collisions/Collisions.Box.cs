@@ -11,6 +11,12 @@ namespace Precisamento.MonoGame.Collisions
     public static partial class Collisions
     {
         public static bool BoxToBox(BoxCollider first, BoxCollider second, out CollisionResult result)
+            => BoxToBox(first.BoundingBox, second.BoundingBox, out result);
+
+        public static bool BoxToBox(BoxCollider first, RectangleF second, out CollisionResult result)
+            => BoxToBox(first.BoundingBox, second, out result);
+
+        public static bool BoxToBox(RectangleF first, RectangleF second, out CollisionResult result)
         {
             result = new CollisionResult();
 
@@ -32,10 +38,10 @@ namespace Precisamento.MonoGame.Collisions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static RectangleF MinkowskiDifference(BoxCollider first, BoxCollider second)
+        private static RectangleF MinkowskiDifference(RectangleF first, RectangleF second)
         {
-            var topLeft = first.BoundingBox.Position - second.BoundingBox.BottomRight;
-            var fullSize = first.BoundingBox.Size + second.BoundingBox.Size;
+            var topLeft = first.Position - second.BottomRight;
+            var fullSize = first.Size + second.Size;
 
             return new RectangleF(topLeft, fullSize);
         }
