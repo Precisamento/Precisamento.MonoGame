@@ -132,8 +132,7 @@ namespace Precisamento.MonoGame.Collisions
 
             if(_scale != 1f && _rotation != 0)
             {
-                var cos = MathF.Cos(_rotation);
-                var sin = MathF.Sin(_rotation);
+                var (sin, cos) = MathF.SinCos(_rotation);
                 _center = _originalCenter * _scale;
                 for(var i = 0; i < _originalPoints.Length; i++)
                 {
@@ -159,7 +158,7 @@ namespace Precisamento.MonoGame.Collisions
 
                 for (var i = 0; i < _points.Length; i++)
                 {
-                    _points[i] *= _scale;
+                    _points[i] = _originalPoints[i] * _scale;
 
                     if (_points[i].X < minX)
                         minX = _points[i].X;
@@ -179,7 +178,7 @@ namespace Precisamento.MonoGame.Collisions
                 var sin = MathF.Sin(_rotation);
                 for (var i = 0; i < _points.Length; i++)
                 {
-                    var p = _points[i] - _center;
+                    var p = _originalPoints[i] - _center;
                     p = new Vector2((cos * p.X) - (sin * p.Y), (sin * p.X) + (cos * p.Y));
                     _points[i] = p + _center;
 
@@ -363,7 +362,7 @@ namespace Precisamento.MonoGame.Collisions
 
             for (int i = 1; i < points.Length; i++)
             {
-                float angle = (MathF.Atan2(points[i].Y, points[i].X) - MathF.Atan2(yMin.Y, yMin.X)) * MathF.Rad2Deg;
+                float angle = (MathF.Atan2(points[i].Y, points[i].X) - MathF.Atan2(yMin.Y, yMin.X)) * MathExt.Rad2Deg;
                 order.Add(new KeyValuePair<Vector2, float>(points[i], angle));
             }
 

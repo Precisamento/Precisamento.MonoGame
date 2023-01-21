@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Precisamento.MonoGame.MathHelpers
 {
-    public static class MathF
+    public static class MathExt
     {
         public const float Epsilon = 0.00001f;
         public const float Deg2Rad = 0.0174532924f;
@@ -14,17 +14,19 @@ namespace Precisamento.MonoGame.MathHelpers
 
         public static Vector2 LengthDir(float length, float direction)
         {
-            return new Vector2((float)(length * Math.Cos(direction)), (float)(-length * Math.Sin(direction)));
+            return new Vector2(
+                length * MathF.Cos(MathHelper.ToRadians(direction)), 
+                -length * MathF.Sin(MathHelper.ToRadians(direction)));
         }
 
         public static float LengthDirX(float length, float direction)
         {
-            return (float)(length * Math.Cos(MathHelper.ToRadians(direction)));
+            return length * MathF.Cos(MathHelper.ToRadians(direction));
         }
 
         public static float LengthDirY(float length, float direction)
         {
-            return (float)(-length * Math.Sin(MathHelper.ToRadians(direction)));
+            return -length * MathF.Sin(MathHelper.ToRadians(direction));
         }
 
         public static float DistanceSquared(Vector2 p1, Vector2 p2)
@@ -39,7 +41,7 @@ namespace Precisamento.MonoGame.MathHelpers
 
         public static float Direction(float x1, float y1, float x2, float y2)
         {
-            var dir = MathHelper.ToDegrees((float)Math.Atan2(y1 - y2, x2 - x1));
+            var dir = MathHelper.ToDegrees(MathF.Atan2(y1 - y2, x2 - x1));
             if (dir < 0f)
                 dir = 360f + dir;
             return dir;
@@ -47,35 +49,27 @@ namespace Precisamento.MonoGame.MathHelpers
 
         public static float Direction(Vector2 p1, Vector2 p2)
         {
-            var dir = MathHelper.ToDegrees((float)Math.Atan2(p1.Y - p2.Y, p2.X - p1.X));
+            var dir = MathHelper.ToDegrees(MathF.Atan2(p1.Y - p2.Y, p2.X - p1.X));
             if (dir < 0f)
                 dir = 360f + dir;
             return dir;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Floor(float f)
-        {
-            return (float)Math.Floor(f);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Floor(float value, float n)
         {
-            return (float)Math.Floor(value / n) * n;
+            return (float)MathF.Floor(value / n) * n;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int FloorToInt(float f)
         {
-            return (int)Math.Floor(f);
+            return (int)MathF.Floor(f);
         }
 
         /// <summary>
-        /// floors the float to the nearest int value below x. note that this only works for values in the range of short
+        /// Rounds a float to the nearest int value below x. Note that this only works for values in the range of short.
         /// </summary>
-        /// <returns>The floor to int.</returns>
-        /// <param name="x">The x coordinate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int FastFloorToInt(float x)
         {
@@ -84,21 +78,15 @@ namespace Precisamento.MonoGame.MathHelpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Ceil(float f)
-        {
-            return (float)Math.Ceiling(f);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Ceil(float value, float n)
         {
-            return (float)Math.Ceiling(value / n) * n;
+            return MathF.Ceiling(value / n) * n;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int CeilToInt(float f)
         {
-            return (int)Math.Ceiling(f);
+            return (int)MathF.Ceiling(f);
         }
 
         /// <summary>
@@ -113,12 +101,6 @@ namespace Precisamento.MonoGame.MathHelpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Round(float f)
-        {
-            return (float)Math.Round(f);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Round(float value, float n)
         {
             return (float)Math.Round(value / n) * n;
@@ -127,7 +109,7 @@ namespace Precisamento.MonoGame.MathHelpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int RoundToInt(float f)
         {
-            return (int)Math.Round(f);
+            return (int)MathF.Round(f);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -177,7 +159,7 @@ namespace Precisamento.MonoGame.MathHelpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Lerp(float from, float to, float t)
         {
-            return from + (to - from) * MathF.Clamp01(t);
+            return from + (to - from) * Clamp01(t);
         }
 
 
@@ -296,82 +278,21 @@ namespace Precisamento.MonoGame.MathHelpers
             return Math.Max(a, Math.Max(b, Math.Max(c, d)));
         }
 
-
-        /// <summary>
-        /// returns the maximum of the passed in values
-        /// </summary>
-        /// <returns>The of.</returns>
-        /// <param name="a">The alpha component.</param>
-        /// <param name="b">The blue component.</param>
-        /// <param name="c">C.</param>
-        /// <param name="d">D.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float MaxOf(float a, float b, float c, float d, float e)
+        public static bool FloatEquals(float x, float y, float epsilon = 0.0001f)
         {
-            return Math.Max(a, Math.Max(b, Math.Max(c, Math.Max(d, e))));
+            if (x == y)
+                return true;
+
+            return Math.Abs(x - y) < epsilon;
         }
 
-        /// <summary>
-        /// Returns the square root
-        /// </summary>
-        /// <param name="val">Value.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Sqrt(float val)
-        {
-            return (float)Math.Sqrt(val);
-        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Pow(float x, float y)
+        public static bool DoubleEquals(double x, double y, double epsilon = 0.0001)
         {
-            return (float)Math.Pow(x, y);
-        }
+            if (x == y)
+                return true;
 
-        /// <summary>
-        /// Returns the sine of angle in radians
-        /// </summary>
-        /// <param name="f">F.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Sin(float f)
-        {
-            return (float)Math.Sin(f);
-        }
-
-        /// <summary>
-        /// Returns the cosine of angle in radians
-        /// </summary>
-        /// <param name="f">F.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Cos(float f)
-        {
-            return (float)Math.Cos(f);
-        }
-
-        /// <summary>
-        /// Returns the arc-cosine of f: the angle in radians whose cosine is f
-        /// </summary>
-        /// <param name="f">F.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Acos(float f)
-        {
-            return (float)Math.Acos(f);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Exp(float power)
-        {
-            return (float)Math.Exp(power);
-        }
-
-        /// <summary>
-        /// returns the angle whose tangent is the quotient (y/x) of two specified numbers
-        /// </summary>
-        /// <param name="y">The y coordinate.</param>
-        /// <param name="x">The x coordinate.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Atan2(float y, float x)
-        {
-            return (float)Math.Atan2(y, x);
+            return Math.Abs(x - y) < epsilon;
         }
     }
 }

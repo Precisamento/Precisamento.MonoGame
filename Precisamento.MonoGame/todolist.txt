@@ -1,0 +1,19 @@
+Dialogue:
+    Commands:
+        ☐ Hide 
+        ☐ Play
+        ☐ Animations
+        Exec:
+            ☐ Once
+            ☐ Frame
+        ☐ Font
+        ☐ Image
+        ☐ 
+    Parsing:
+        ☐ Error recovery
+        ☐ Name resolution
+    Display:
+        ☐ Friggin everything
+    Dialogue Settings:
+        ☐ Default say transition
+        ☐ Character profiles

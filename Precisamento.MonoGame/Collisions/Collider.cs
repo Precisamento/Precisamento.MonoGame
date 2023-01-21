@@ -61,7 +61,7 @@ namespace Precisamento.MonoGame.Collisions
 
         protected void AssertScale(float scale)
         {
-            if (scale < MathF.Epsilon)
+            if (scale < MathExt.Epsilon)
                 throw new ArgumentOutOfRangeException(nameof(scale), "Scale cannot be less than or equal to zero.");
         }
 

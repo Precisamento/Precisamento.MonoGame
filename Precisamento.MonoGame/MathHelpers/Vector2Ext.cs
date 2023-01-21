@@ -17,7 +17,7 @@ namespace Precisamento.MonoGame.MathHelpers
         public static void Normalize(ref Vector2 vec)
         {
             var magnitude = MathF.Sqrt((vec.X * vec.X) + (vec.Y * vec.Y));
-            if (magnitude > MathF.Epsilon)
+            if (magnitude > MathExt.Epsilon)
                 vec /= magnitude;
             else
                 vec.X = vec.Y = 0;
@@ -32,7 +32,7 @@ namespace Precisamento.MonoGame.MathHelpers
         public static Vector2 Normalize(Vector2 vec)
         {
             var magnitude = MathF.Sqrt((vec.X * vec.X) + (vec.Y * vec.Y));
-            if (magnitude > MathF.Epsilon)
+            if (magnitude > MathExt.Epsilon)
                 vec /= magnitude;
             else
                 vec.X = vec.Y = 0;
@@ -148,7 +148,7 @@ namespace Precisamento.MonoGame.MathHelpers
             Normalize(ref from);
             Normalize(ref to);
 
-            return MathF.Acos(MathF.Clamp(Vector2.Dot(from, to), -1f, 1f)) * MathF.Rad2Deg;
+            return MathF.Acos(MathExt.Clamp(Vector2.Dot(from, to), -1f, 1f)) * MathExt.Rad2Deg;
         }
 
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using DefaultEcs.System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
@@ -264,6 +265,26 @@ namespace Precisamento.MonoGame.Input
                     }
                 }
             }
+        }
+
+        public static ActionSystem<float> CreateInputSystem(Game game)
+        {
+            var input = game.Services.GetService<InputManager>();
+            var actions = game.Services.GetService<IActionManager>();
+
+            if (input is null || actions is null)
+            {
+                throw new InvalidOperationException($"Game must have both a " +
+                    $"{nameof(InputManager)} and a " +
+                    $"{nameof(IActionManager)} registered as services " +
+                    $"in order to create an Input System");
+            }
+
+            return new ActionSystem<float>(_ =>
+            {
+                input.Update();
+                actions.Update();
+            });
         }
     }
 }

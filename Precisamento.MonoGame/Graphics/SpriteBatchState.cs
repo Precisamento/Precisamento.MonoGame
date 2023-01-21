@@ -107,7 +107,7 @@ namespace Precisamento.MonoGame.Graphics
             SpriteBatch.End();
         }
 
-        public void SetRenderTarget(RenderTarget2D renderTarget)
+        public void SetRenderTarget(RenderTarget2D? renderTarget)
         {
             var state = Drawing;
 

@@ -20,11 +20,7 @@ namespace Precisamento.MonoGame.Collisions
             set
             {
                 if(value != _width)
-                {
-                    _width = value;
-                    _originalPoints = BuildBox(value, _height);
-                    _dirty = true;
-                }
+                    SetSize(value, _height);
             }
         }
 
@@ -41,11 +37,8 @@ namespace Precisamento.MonoGame.Collisions
             get => _height;
             set
             {
-                if (value == _height)
-                    return;
-                _height = value;
-                _originalPoints = BuildBox(_width, value);
-                _dirty = true;
+                if (value != _height)
+                    SetSize(_width, value);
             }
         }
 
@@ -61,10 +54,7 @@ namespace Precisamento.MonoGame.Collisions
             {
                 if (value.Width == _width && value.Height == _height)
                     return;
-                _width = value.Width;
-                _height = value.Height;
-                _originalPoints = BuildBox(_width, _height);
-                _dirty = true;
+                SetSize(_width, _height);
             }
         }
 
@@ -163,6 +153,16 @@ namespace Precisamento.MonoGame.Collisions
                 return Collisions.PointToBox(point, this, out result);
             else
                 return base.CollidesWithPoint(point, out result);
+        }
+
+        private void SetSize(float width, float height)
+        {
+            _width = width;
+            _height = height;
+            _dirty = true;
+            _originalPoints[1] = new Vector2(width, 0);
+            _originalPoints[2] = new Vector2(width, height);
+            _originalPoints[3] = new Vector2(0, height);
         }
     }
 }

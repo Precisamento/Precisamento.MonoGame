@@ -63,7 +63,7 @@ namespace Precisamento.MonoGame.MathHelpers
                 var dt = result.Y - rect.Top;
                 var db = rect.Bottom - result.Y;
 
-                var min = MathF.MinOf(dl, dr, dt, db);
+                var min = MathExt.MinOf(dl, dr, dt, db);
                 if (min == dt)
                     result.Y = rect.Top;
                 else if (min == db)
@@ -94,7 +94,7 @@ namespace Precisamento.MonoGame.MathHelpers
                 var dt = result.Y - rect.Top;
                 var db = rect.Bottom - result.Y;
 
-                var min = MathF.MinOf(dl, dr, dt, db);
+                var min = MathExt.MinOf(dl, dr, dt, db);
                 if (min == dt)
                 {
                     result.Y = rect.Top;

@@ -44,8 +44,8 @@ namespace Precisamento.MonoGame.Collisions
 
         public override void Broadphase(Vector2 position, ISet<Collider> results)
         {
-            var ex = MathF.FastFloorToInt(position.X * _inverseCellSize);
-            var ey = MathF.FastFloorToInt(position.Y * _inverseCellSize);
+            var ex = MathExt.FastFloorToInt(position.X * _inverseCellSize);
+            var ey = MathExt.FastFloorToInt(position.Y * _inverseCellSize);
             if (!_cells.TryGetValue(ex, ey, out var set))
                 return;
 
@@ -62,6 +62,8 @@ namespace Precisamento.MonoGame.Collisions
         {
             foreach (var set in GetOverlappingSets(collider.BoundingBox))
                 results.UnionWith(set);
+
+            results.Remove(collider);
         }
 
         public override void Clear()
@@ -71,8 +73,8 @@ namespace Precisamento.MonoGame.Collisions
 
         public override bool CollidesWithAny(Vector2 position)
         {
-            var ex = MathF.FastFloorToInt(position.X * _inverseCellSize);
-            var ey = MathF.FastFloorToInt(position.Y * _inverseCellSize);
+            var ex = MathExt.FastFloorToInt(position.X * _inverseCellSize);
+            var ey = MathExt.FastFloorToInt(position.Y * _inverseCellSize);
             if (_cells.TryGetValue(ex, ey, out var set))
             {
                 foreach (var collider in set)
@@ -87,8 +89,8 @@ namespace Precisamento.MonoGame.Collisions
 
         public override bool CollidesWithAny(Vector2 position, CollisionFilter<Vector2> predicate)
         {
-            var ex = MathF.FastFloorToInt(position.X * _inverseCellSize);
-            var ey = MathF.FastFloorToInt(position.Y * _inverseCellSize);
+            var ex = MathExt.FastFloorToInt(position.X * _inverseCellSize);
+            var ey = MathExt.FastFloorToInt(position.Y * _inverseCellSize);
             if (_cells.TryGetValue(ex, ey, out var set))
             {
                 foreach (var collider in set)
@@ -161,8 +163,8 @@ namespace Precisamento.MonoGame.Collisions
         {
             var result = false;
 
-            var ex = MathF.FastFloorToInt(position.X * _inverseCellSize);
-            var ey = MathF.FastFloorToInt(position.Y * _inverseCellSize);
+            var ex = MathExt.FastFloorToInt(position.X * _inverseCellSize);
+            var ey = MathExt.FastFloorToInt(position.Y * _inverseCellSize);
             if (_cells.TryGetValue(ex, ey, out var set))
             {
                 foreach (var collider in set)
@@ -182,8 +184,8 @@ namespace Precisamento.MonoGame.Collisions
         {
             var result = false;
 
-            var ex = MathF.FastFloorToInt(position.X * _inverseCellSize);
-            var ey = MathF.FastFloorToInt(position.Y * _inverseCellSize);
+            var ex = MathExt.FastFloorToInt(position.X * _inverseCellSize);
+            var ey = MathExt.FastFloorToInt(position.Y * _inverseCellSize);
             if (_cells.TryGetValue(ex, ey, out var set))
             {
                 foreach (var collider in set)
@@ -247,7 +249,7 @@ namespace Precisamento.MonoGame.Collisions
                 {
                     if (collider != other && collider.Overlaps(other))
                     {
-                        results.Add(collider);
+                        results.Add(other);
                         result = true;
                     }
                 }
@@ -266,7 +268,7 @@ namespace Precisamento.MonoGame.Collisions
                 {
                     if (collider != other && collider.Overlaps(other) && predicate(collider, other))
                     {
-                        results.Add(collider);
+                        results.Add(other);
                         result = true;
                     }
                 }
@@ -277,8 +279,8 @@ namespace Precisamento.MonoGame.Collisions
 
         public override Collider FirstOrDefault(Vector2 position)
         {
-            var ex = MathF.FastFloorToInt(position.X * _inverseCellSize);
-            var ey = MathF.FastFloorToInt(position.Y * _inverseCellSize);
+            var ex = MathExt.FastFloorToInt(position.X * _inverseCellSize);
+            var ey = MathExt.FastFloorToInt(position.Y * _inverseCellSize);
             if (_cells.TryGetValue(ex, ey, out var set))
             {
                 foreach (var collider in set)
@@ -293,8 +295,8 @@ namespace Precisamento.MonoGame.Collisions
 
         public override Collider FirstOrDefault(Vector2 position, CollisionFilter<Vector2> predicate)
         {
-            var ex = MathF.FastFloorToInt(position.X * _inverseCellSize);
-            var ey = MathF.FastFloorToInt(position.Y * _inverseCellSize);
+            var ex = MathExt.FastFloorToInt(position.X * _inverseCellSize);
+            var ey = MathExt.FastFloorToInt(position.Y * _inverseCellSize);
             if (_cells.TryGetValue(ex, ey, out var set))
             {
                 foreach (var collider in set)
@@ -376,10 +378,10 @@ namespace Precisamento.MonoGame.Collisions
 
         private IEnumerable<HashSet<Collider>> GetOverlappingSets(RectangleF box)
         {
-            var minX = MathF.FloorToInt(box.Left * _inverseCellSize);
-            var minY = MathF.FloorToInt(box.Top * _inverseCellSize);
-            var maxX = MathF.FloorToInt(box.Right * _inverseCellSize) + 1;
-            var maxY = MathF.FloorToInt(box.Bottom * _inverseCellSize) + 1;
+            var minX = MathExt.FastFloorToInt(box.Left * _inverseCellSize);
+            var minY = MathExt.FastFloorToInt(box.Top * _inverseCellSize);
+            var maxX = MathExt.FastFloorToInt(box.Right * _inverseCellSize) + 1;
+            var maxY = MathExt.FastFloorToInt(box.Bottom * _inverseCellSize) + 1;
 
             for (var w = minX; w < maxX; ++w)
             {
@@ -398,6 +400,8 @@ namespace Precisamento.MonoGame.Collisions
 
     internal class SpatialStore
     {
+        // Todo: Compare performance of HashSet vs List
+
         private Dictionary<long, HashSet<Collider>> _cells = new Dictionary<long, HashSet<Collider>>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

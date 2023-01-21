@@ -235,6 +235,5 @@ namespace Precisamento.MonoGame.Collisions
         /// <param name="results">The set that's filled with the results.</param>
         /// <param name="predicate"></param>
         void All(ISet<Collider> results, Predicate<Collider> predicate);
-
     }
 }

@@ -214,7 +214,7 @@ namespace Precisamento.MonoGame.Collisions
                 else
                     _box.Size = new Size2(size, size);
 
-                _box.Center = new Vector2(size / 2);
+                _box.OriginalCenter = new Vector2(size / 2);
                 _box.Rotation = _rotation;
                 _box.Position = _position;
 

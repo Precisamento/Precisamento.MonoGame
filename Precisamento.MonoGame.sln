@@ -1,16 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31025.218
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.32916.344
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Precisamento.MonoGame", "Precisamento.MonoGame\Precisamento.MonoGame.csproj", "{02FDBF68-ED7C-44CC-8243-9EAE5689013F}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharpMath2", "SharpMath2\SharpMath2.shproj", "{53290E9B-7A54-4098-AB3D-E936D93BDF97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Precisamento.MonoGame.Resources", "Precisamento.MonoGame.Resources\Precisamento.MonoGame.Resources.csproj", "{86D900F0-4912-4437-AA09-F4DC1F78FAD6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Precisamento.MonoGame.Resources.Cli", "Precisamento.MonoGame.Resources.Simple\Precisamento.MonoGame.Resources.Cli.csproj", "{D413A615-D40B-4ECD-A881-9FE8FD9D0B12}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5791AC8F-00E9-479C-B45B-D41322481B22}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Precisamento.MonoGame.YarnSpinner", "Precisamento.MonoGame.YarnSpinner\Precisamento.MonoGame.YarnSpinner.csproj", "{771D238F-3AF0-406B-9C12-F3F1473BB002}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soren.Extensions", "..\Soren.Collections\Soren.Collections\Soren.Extensions.csproj", "{0BA73CE1-5AD2-4772-82FA-0F6EE470FF91}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Playground", "Tests\Playground\Playground.csproj", "{D2F3971B-789D-4BCC-8D2E-6E29610CB7D5}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		SharpMath2\SharpMath2.projitems*{53290e9b-7a54-4098-ab3d-e936d93bdf97}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -20,9 +27,32 @@ Global
 		{02FDBF68-ED7C-44CC-8243-9EAE5689013F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02FDBF68-ED7C-44CC-8243-9EAE5689013F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02FDBF68-ED7C-44CC-8243-9EAE5689013F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86D900F0-4912-4437-AA09-F4DC1F78FAD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86D900F0-4912-4437-AA09-F4DC1F78FAD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86D900F0-4912-4437-AA09-F4DC1F78FAD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86D900F0-4912-4437-AA09-F4DC1F78FAD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D413A615-D40B-4ECD-A881-9FE8FD9D0B12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D413A615-D40B-4ECD-A881-9FE8FD9D0B12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D413A615-D40B-4ECD-A881-9FE8FD9D0B12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D413A615-D40B-4ECD-A881-9FE8FD9D0B12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{771D238F-3AF0-406B-9C12-F3F1473BB002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{771D238F-3AF0-406B-9C12-F3F1473BB002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{771D238F-3AF0-406B-9C12-F3F1473BB002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{771D238F-3AF0-406B-9C12-F3F1473BB002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BA73CE1-5AD2-4772-82FA-0F6EE470FF91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BA73CE1-5AD2-4772-82FA-0F6EE470FF91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BA73CE1-5AD2-4772-82FA-0F6EE470FF91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BA73CE1-5AD2-4772-82FA-0F6EE470FF91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2F3971B-789D-4BCC-8D2E-6E29610CB7D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2F3971B-789D-4BCC-8D2E-6E29610CB7D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2F3971B-789D-4BCC-8D2E-6E29610CB7D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2F3971B-789D-4BCC-8D2E-6E29610CB7D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D2F3971B-789D-4BCC-8D2E-6E29610CB7D5} = {5791AC8F-00E9-479C-B45B-D41322481B22}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E9DA10A9-7693-4A8B-8B7A-5F6EA2345C94}

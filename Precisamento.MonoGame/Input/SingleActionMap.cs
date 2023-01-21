@@ -14,6 +14,24 @@ namespace Precisamento.MonoGame.Input
         public bool CurrentPressed { get; private set; }
         public bool PreviousPressed { get; private set; }
 
+        public SingleActionMap Add(Keys key)
+        {
+            Keys.Add(key);
+            return this;
+        }
+
+        public SingleActionMap Add(Buttons button)
+        {
+            Buttons.Add(button);
+            return this;
+        }
+
+        public SingleActionMap Add(MouseButtons mouseButton)
+        {
+            MouseButtons.Add(mouseButton);
+            return this;
+        }
+
         public void Update(InputManager manager)
         {
             PreviousPressed = CurrentPressed;
