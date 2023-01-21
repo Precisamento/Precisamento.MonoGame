@@ -1,0 +1,3 @@
+[submodule "Soren.Extensions"]
+	path = Soren.Extensions
+	url = https://github.com/mystborn/Soren.Extensions
