@@ -11,7 +11,7 @@ namespace Precisamento.MonoGame.YarnSpinner
     {
         public bool Complete { get; set; }
 
-        public static Pool<CommandResult> Pool { get; } 
+        public static Pool<CommandResult> Pool { get; }
             = new Pool<CommandResult>(() => new CommandResult(), cr => cr.Complete = false, true);
     }
 }

@@ -98,7 +98,8 @@ namespace Precisamento.MonoGame.YarnSpinner
         {
             var fname = Path.GetFileNameWithoutExtension(path);
             var ext = Path.GetExtension(path);
-            return FromCsv(path, $"{fname}-metadata{ext}");
+            var metadata = $"{fname}-metadata{ext}";
+            return FromCsv(path, File.Exists(metadata) ? metadata : null);
         }
 
         public static YarnLocalization FromCsv(string textPath, string? metadataPath)

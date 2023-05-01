@@ -16,6 +16,17 @@ namespace Precisamento.MonoGame.Resources
         }
     }
 
+    public class ResourceProcessFileCompleteEventArgs : ResourceProcessFileEventArgs
+    {
+        public string OutputFile { get; }
+
+        public ResourceProcessFileCompleteEventArgs(string input, string output, ResourceConverter converter)
+            : base(input, converter)
+        {
+            OutputFile = output;
+        }
+    }
+
     public class ResourceProcessFileErrorEventArgs : ResourceProcessFileEventArgs
     {
         public Exception Exception { get; }

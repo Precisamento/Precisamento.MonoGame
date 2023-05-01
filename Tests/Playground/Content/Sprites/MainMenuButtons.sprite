@@ -3,22 +3,59 @@
     "Texture": "Content/SpriteSheets/MainMenuSpriteSheet",
     "Width": 9,
     "Height": 9,
-    "Thickness": 4,
     "Animations": [
         {
             "Name": "Normal",
+            "Thickness": 4,
             "X": 0,
             "Y": 0
         },
         {
             "Name": "Hover",
+            "Thickness": 4,
             "X": 8,
             "Y": 0
-        }, 
+        },
         {
             "Name": "Press",
+            "Thickness": 4,
             "X": 16,
             "Y": 0
+        },
+        {
+            "Name": "SelectBackground",
+            "Thickness": 5,
+            "FPS": 5,
+            "Width": 11,
+            "Height": 11,
+            "UpdateMode": "Cycle",
+            "Frames": [
+                {
+                    "X": 25,
+                    "Y": 0
+                },
+                {
+                    "X": 36,
+                    "Y": 0
+                }
+            ]
+        },
+        {
+            "Name": "Cursor",
+            "FPS": 5,
+            "Width": 12,
+            "Height": 9,
+            "UpdateMode": "Cycle",
+            "Frames": [
+                {
+                    "X": 0,
+                    "Y": 10
+                },
+                {
+                    "X": 12,
+                    "Y": 10
+                }
+            ]
         }
     ]
 }

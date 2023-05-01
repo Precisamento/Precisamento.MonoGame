@@ -9,6 +9,14 @@ namespace Precisamento.MonoGame.Graphics
 {
     public struct SpriteDrawParams
     {
+        public SpriteDrawParams()
+        {
+            Color = Color.White;
+            Effects = SpriteEffects.None;
+            Depth = 0;
+            Invisible = false;
+        }
+
         public Color Color { get; set; }
         public SpriteEffects Effects { get; set; }
         public float Depth { get; set; }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Soren.Extensions.Collections;
+using MonoGame.Extended;
 
 namespace Precisamento.MonoGame.Dialogue
 {
@@ -14,10 +15,13 @@ namespace Precisamento.MonoGame.Dialogue
     {
         private static List<IDialogueProcessor> _processorStack = new List<IDialogueProcessor>();
 
-        public int LineStart { get; private set; }
+        public int LineStart { get; set; }
         public List<DialogueLine> Lines { get; } = new List<DialogueLine>();
         public List<IDialogueProcessor> Processors { get; } = new List<IDialogueProcessor>();
         public bool HasCustomProcessors { get; private set; }
+        public Size TotalSize { get; private set; }
+        public bool IsOption { get; set; }
+        public string[] Metadata { get; private set; }
 
         public DialogueFrame()
         {
@@ -40,6 +44,7 @@ namespace Precisamento.MonoGame.Dialogue
             ISentenceSplitter sentenceSplitter,
             int lineStart)
         {
+            Metadata = line.Metadata;
             GenerateLines(line, processorFactory, state, sentenceSplitter);
             LineStart = lineStart;
         }
@@ -61,6 +66,7 @@ namespace Precisamento.MonoGame.Dialogue
             var maxHeight = 0;
             var lastSplitIndex = -1;
             var lastSplitWidth = 0;
+            var totalSize = new Size();
 
             for (var letter = 0; letter < text.Length; letter++)
             {
@@ -118,6 +124,8 @@ namespace Precisamento.MonoGame.Dialogue
                         InnerJustification = state.InnerJustification,
                         HorizontalJustification = state.HorizontalJustification
                     };
+                    totalSize.Width = Math.Max(totalSize.Width, lastSplitWidth);
+                    totalSize.Height += maxHeight;
                     Lines.Add(dialogueLine);
                     currentLine.Clear();
                     var temp = currentLine;
@@ -147,6 +155,11 @@ namespace Precisamento.MonoGame.Dialogue
                 InnerJustification = state.InnerJustification,
                 HorizontalJustification = state.HorizontalJustification
             };
+
+            totalSize.Width = Math.Max(totalSize.Width, width);
+            totalSize.Height += maxHeight;
+
+            TotalSize = totalSize;
 
             Lines.Add(finalLine);
         }

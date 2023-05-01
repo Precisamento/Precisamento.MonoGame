@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
+using MonoGame.Extended.Sprites;
 using MonoGame.Extended.TextureAtlases;
 using Precisamento.MonoGame.Resources;
 using System;
@@ -7,12 +9,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
 
 namespace Precisamento.MonoGame.Graphics
 {
     public class Sprite
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public List<SpriteAnimation> AnimationList { get; } = new List<SpriteAnimation>();
         public Dictionary<string, SpriteAnimation> Animations { get; set; } = new Dictionary<string, SpriteAnimation>();
 
@@ -38,75 +41,60 @@ namespace Precisamento.MonoGame.Graphics
         public static Sprite FromJson(JsonElement root, IResourceLoader resources)
         {
             var sprite = new Sprite();
-            sprite.Name = root.GetProperty("Name").GetString();
+            if(TryGetProperty(root, out var name, "Name", "name"))
+                sprite.Name = name.GetString();
 
-            string defaultTexture = null;
+            string? defaultTexture = null;
             int defaultWidth = -1;
             int defaultHeight = -1;
-            int defaultThickness = 0;
+            Thickness defaultThickness = new(0);
             float defaultFps = 0;
-            SpriteUpdateMode defaultUpdateMode = SpriteUpdateMode.None;
-            int defaultStartingFrame = 0;
-            bool defaultUsesRegions = false;
-            Vector2 defaultOrigin = Vector2.Zero;
+            var defaultUpdateMode = SpriteUpdateMode.None;
+            var defaultStartingFrame = 0;
+            var defaultOrigin = Vector2.Zero;
 
-            if (root.TryGetProperty("Texture", out var textureElem))
+            if (TryGetProperty(root, out var textureElem, "Texture", "texture"))
             {
                 defaultTexture = textureElem.GetString();
-                if (string.IsNullOrWhiteSpace(defaultTexture))
-                    throw new JsonException("Invalid value for Texture. Cannot be an empty string.");
             }
 
-            if (root.TryGetProperty("Width", out var widthElem))
+            if (TryGetProperty(root, out var widthElem, "Width", "width"))
             {
                 defaultWidth = widthElem.GetInt32();
-                if (defaultWidth <= 0)
-                    throw new JsonException("Invalid value for Width. Cannot be <= 0.");
             }
 
-            if (root.TryGetProperty("Height", out var heightElem))
+            if (TryGetProperty(root, out var heightElem, "Height", "height"))
             {
                 defaultHeight = heightElem.GetInt32();
-                if (defaultHeight <= 0)
-                    throw new JsonException("Invalid value for Height. Cannot be <= 0.");
             }
 
-            if (root.TryGetProperty("Thickness", out var thicknessElem))
+            if (TryGetProperty(root, out var thicknessElem, "Thickness", "thickness"))
             {
-                defaultThickness = thicknessElem.GetInt32();
-                if (defaultThickness < 0)
-                    throw new JsonException("Invalid value for Thickness. Cannot be < 0.");
+                defaultThickness = ReadThickness(thicknessElem, defaultThickness);
             }
 
-            if (root.TryGetProperty("FPS", out var fpsElem))
+            if (TryGetProperty(root, out var fpsElem, "FPS", "Fps", "fps"))
             {
                 defaultFps = fpsElem.GetSingle();
-                if (defaultFps < 0)
-                    throw new JsonException("Invalid value for FPS. Cannot be < 0.");
             }
 
-            if (root.TryGetProperty("StartingFrame", out var startingFrameElem))
+            if (TryGetProperty(root, out var startingFrameElem, "StartingFrame", "startingFrame", "starting_frame"))
             {
                 defaultStartingFrame = startingFrameElem.GetInt32();
-                if (defaultStartingFrame < 0)
-                    throw new JsonException("Invalid value for StartingFrame. Cannot be < 0.");
             }
 
-            if (root.TryGetProperty("UpdateMode", out var updateModeElem))
+            if (TryGetProperty(root, out var updateModeElem, "UpdateMode", "updateMode", "update_mode"))
             {
                 defaultUpdateMode = ConvertUpdateModeStringToEnum(updateModeElem.GetString());
             }
 
-            if (root.TryGetProperty("Origin", out var originElem))
+            if (TryGetProperty(root, out var originElem, "Origin", "origin"))
             {
-                defaultOrigin.X = originElem.GetProperty("X").GetSingle();
-                defaultOrigin.Y = originElem.GetProperty("Y").GetSingle();
+                defaultOrigin.X = GetProperty(originElem, "X", "x").GetSingle();
+                defaultOrigin.Y = GetProperty(originElem, "Y", "y").GetSingle();
             }
 
-            if (root.TryGetProperty("UsesRegions", out var usesRegionsElem))
-                defaultUsesRegions = usesRegionsElem.GetBoolean();
-
-            if (root.TryGetProperty("Animations", out var animations))
+            if (TryGetProperty(root, out var animations, "Animations", "animations"))
             {
                 for (var i = 0; i < animations.GetArrayLength(); i++)
                 {
@@ -114,7 +102,7 @@ namespace Precisamento.MonoGame.Graphics
                     var result = new SpriteAnimation();
                     result.Frames = new List<TextureRegion2D>();
 
-                    if (animation.TryGetProperty("Name", out var nameElem))
+                    if (TryGetProperty(animation, out var nameElem, "Name", "name"))
                     {
                         result.Name = nameElem.GetString();
                         if (string.IsNullOrWhiteSpace(result.Name))
@@ -128,7 +116,7 @@ namespace Precisamento.MonoGame.Graphics
                     sprite.AnimationList.Add(result);
                     sprite.Animations.Add(result.Name, result);
 
-                    if (animation.TryGetProperty("UpdateMode", out updateModeElem))
+                    if (TryGetProperty(animation, out updateModeElem, "UpdateMode", "updateMode", "update_mode"))
                     {
                         result.UpdateMode = ConvertUpdateModeStringToEnum(updateModeElem.GetString());
                     }
@@ -137,11 +125,11 @@ namespace Precisamento.MonoGame.Graphics
                         result.UpdateMode = defaultUpdateMode;
                     }
 
-                    if (animation.TryGetProperty("Origin", out originElem))
+                    if (TryGetProperty(animation, out originElem, "Origin", "origin"))
                     {
                         var origin = new Vector2();
-                        origin.X = originElem.GetProperty("X").GetSingle();
-                        origin.Y = originElem.GetProperty("Y").GetSingle();
+                        origin.X = GetProperty(originElem, "X", "x").GetSingle();
+                        origin.Y = GetProperty(originElem, "Y", "y").GetSingle();
                         result.Origin = origin;
                     }
                     else
@@ -149,7 +137,7 @@ namespace Precisamento.MonoGame.Graphics
                         result.Origin = defaultOrigin;
                     }
 
-                    if (animation.TryGetProperty("FPS", out fpsElem))
+                    if (TryGetProperty(animation, out fpsElem, "FPS", "fps"))
                     {
                         result.FramesPerSecond = fpsElem.GetSingle();
                         if (result.FramesPerSecond < 0)
@@ -160,7 +148,7 @@ namespace Precisamento.MonoGame.Graphics
                         result.FramesPerSecond = defaultFps;
                     }
 
-                    if (animation.TryGetProperty("StartingFrame", out startingFrameElem))
+                    if (TryGetProperty(animation, out startingFrameElem, "StartingFrame", "startingFrame", "starting_frame"))
                     {
                         result.StartFrameIndex = startingFrameElem.GetInt32();
                         if (result.StartFrameIndex < 0)
@@ -171,58 +159,66 @@ namespace Precisamento.MonoGame.Graphics
                         result.StartFrameIndex = defaultStartingFrame;
                     }
 
-                    bool usesRegions = defaultUsesRegions;
-
-                    if (animation.TryGetProperty("UsesRegions", out usesRegionsElem))
-                        usesRegions = usesRegionsElem.GetBoolean();
-
-                    if (animation.TryGetProperty("Frames", out var frames))
+                    if (TryGetProperty(animation, out var frames, "Frames", "frames"))
                     {
                         var width = defaultWidth;
                         var height = defaultHeight;
                         var thickness = defaultThickness;
                         var texture = defaultTexture;
 
-                        if (animation.TryGetProperty("Width", out widthElem))
+                        // Validation checks are done by the Frame/Region creation.
+
+                        if (TryGetProperty(animation, out widthElem, "Width", "width"))
                             width = widthElem.GetInt32();
 
-                        if (animation.TryGetProperty("Height", out heightElem))
+                        if (TryGetProperty(animation, out heightElem, "Height", "height"))
                             height = heightElem.GetInt32();
 
-                        if (animation.TryGetProperty("Thickness", out thicknessElem))
-                            thickness = thicknessElem.GetInt32();
+                        if (TryGetProperty(animation, out thicknessElem, "Thickness", "thickness"))
+                            thickness = ReadThickness(thicknessElem, defaultThickness);
 
-                        if (animation.TryGetProperty("Texture", out textureElem))
+                        if (TryGetProperty(animation, out textureElem, "Texture", "texture"))
                             texture = textureElem.GetString();
 
                         for (var j = 0; j < frames.GetArrayLength(); j++)
                         {
                             var frameElem = frames[j];
-                            var frame = usesRegions ?
-                                ReadSpriteRegion(frameElem, resources, thickness, texture) :
-                                ReadSpriteFrame(frameElem, resources, width, height, thickness, texture);
+                            var frame = ReadFrameOrRegion(frameElem, resources, width, height, thickness, texture);
                             result.Frames.Add(frame);
                         }
                     }
                     else
                     {
-                        var frame = usesRegions ?
-                            ReadSpriteRegion(animation, resources, defaultThickness, defaultTexture) :
-                            ReadSpriteFrame(animation, resources, defaultWidth, defaultHeight, defaultThickness, defaultTexture);
+                        var frame = ReadFrameOrRegion(animation, resources, defaultWidth, defaultHeight, defaultThickness, defaultTexture);
                         result.Frames.Add(frame);
                     }
                 }
             }
+            else if(TryGetProperty(root, out var frames, "Frames", "frames"))
+            {
+                var animation = new SpriteAnimation();
+                animation.Frames = new List<TextureRegion2D>();
+                animation.FramesPerSecond = defaultFps;
+                animation.Name = "0";
+                animation.Origin = defaultOrigin;
+                animation.UpdateMode = defaultUpdateMode;
+                animation.StartFrameIndex = defaultStartingFrame;
+
+                for (var j = 0; j < frames.GetArrayLength(); j++)
+                {
+                    var frameElem = frames[j];
+                    var frame = ReadFrameOrRegion(frameElem, resources, defaultWidth, defaultHeight, defaultThickness, defaultTexture);
+                    animation.Frames.Add(frame);
+                }
+            }
             else
             {
-                var frame = defaultUsesRegions ?
-                    ReadSpriteRegion(root, resources, defaultThickness, defaultTexture) :
-                    ReadSpriteFrame(root, resources, defaultWidth, defaultHeight, defaultThickness, defaultTexture);
+                var frame = ReadFrameOrRegion(root, resources, defaultWidth, defaultHeight, defaultThickness, defaultTexture);
 
                 var animation = new SpriteAnimation();
-                animation.Frames.Add(frame);
+                animation.Frames = new List<TextureRegion2D>() { frame };
                 animation.FramesPerSecond = defaultFps;
-                animation.Name = "Default";
+                animation.Name = "0";
                 animation.Origin = defaultOrigin;
                 animation.UpdateMode = defaultUpdateMode;
                 animation.StartFrameIndex = defaultStartingFrame;
@@ -231,16 +227,28 @@ namespace Precisamento.MonoGame.Graphics
             return sprite;
         }
 
-        private static TextureRegion2D ReadSpriteRegion(JsonElement element, IResourceLoader resources, int defaultThickness, string defaultTexture)
+        private static TextureRegion2D ReadFrameOrRegion(JsonElement element, IResourceLoader resources, int defaultWidth, int defaultHeight, Thickness defaultThickness, string? defaultTexture)
         {
-            int thickness = defaultThickness;
-            string texture = defaultTexture;
-            string region = element.GetProperty("Region").GetString();
+            if(TryGetProperty(element, out _, "Region", "region"))
+            {
+                return ReadSpriteRegion(element, resources, defaultThickness, defaultTexture);
+            }
+            else
+            {
+                return ReadSpriteFrame(element, resources, defaultWidth, defaultHeight, defaultThickness, defaultTexture);
+            }
+        }
 
-            if (element.TryGetProperty("Thickness", out var thicknessElem))
-                thickness = thicknessElem.GetInt32();
+        private static TextureRegion2D ReadSpriteRegion(JsonElement element, IResourceLoader resources, Thickness defaultThickness, string? defaultTexture)
+        {
+            var thickness = defaultThickness;
+            string? texture = defaultTexture;
+            string? region = GetProperty(element, "Region", "region").GetString();
 
-            if (element.TryGetProperty("Texture", out var textureElem))
+            if (TryGetProperty(element, out var thicknessElem, "Thickness", "thickness"))
+                thickness = ReadThickness(thicknessElem, defaultThickness);
+
+            if (TryGetProperty(element, out var textureElem, "Texture", "texture"))
                 texture = textureElem.GetString();
 
             if (string.IsNullOrWhiteSpace(texture))
@@ -252,31 +260,31 @@ namespace Precisamento.MonoGame.Graphics
             var atlas = resources.Load<TextureAtlas>(texture);
             var frame = atlas.GetRegion(region);
 
-            if (thickness != 0 && !(frame is NinePatchRegion2D))
+            if (ThicknessIsNotZero(thickness) && frame is not NinePatchRegion2D)
                 frame = new NinePatchRegion2D(frame, thickness);
 
             return frame;
         }
 
-        private static TextureRegion2D ReadSpriteFrame(JsonElement element, IResourceLoader resources, int defaultWidth, int defaultHeight, int defaultThickness, string defaultTexture)
+        private static TextureRegion2D ReadSpriteFrame(JsonElement element, IResourceLoader resources, int defaultWidth, int defaultHeight, Thickness defaultThickness, string? defaultTexture)
         {
-            var x = element.GetProperty("X").GetInt32();
-            var y = element.GetProperty("Y").GetInt32();
-            int width = defaultWidth;
-            int height = defaultHeight;
-            int thickness = defaultThickness;
-            string texture = defaultTexture;
+            var x = GetProperty(element, "X", "x").GetInt32();
+            var y = GetProperty(element, "Y", "y").GetInt32();
+            var width = defaultWidth;
+            var height = defaultHeight;
+            var thickness = defaultThickness;
+            var texture = defaultTexture;
 
-            if (element.TryGetProperty("Width", out var widthElem))
+            if (TryGetProperty(element, out var widthElem, "Width", "width"))
                 width = widthElem.GetInt32();
 
-            if (element.TryGetProperty("Height", out var heightElem))
+            if (TryGetProperty(element, out var heightElem, "Height", "height"))
                 height = heightElem.GetInt32();
 
-            if (element.TryGetProperty("Thickness", out var thicknessElem))
-                thickness = thicknessElem.GetInt32();
+            if (TryGetProperty(element, out var thicknessElem, "Thickness", "thickness"))
+                thickness = ReadThickness(thicknessElem, defaultThickness);
 
-            if (element.TryGetProperty("Texture", out var textureElem))
+            if (TryGetProperty(element, out var textureElem, "Texture", "texture"))
                 texture = textureElem.GetString();
 
             if (x < 0)
@@ -291,23 +299,161 @@ namespace Precisamento.MonoGame.Graphics
             if (height < 0)
                 throw new JsonException("Invalid value for Height. Cannot be < 0.");
 
-            if (thickness < 0)
-                throw new JsonException("Invalid value for Thickness. Cannot be < 0.");
-
             if (string.IsNullOrWhiteSpace(texture))
                 throw new JsonException("Invalid value for Texture. Cannot be an empty string.");
 
             var atlas = resources.Load<Texture2D>(texture);
             var frame = new TextureRegion2D(atlas, x, y, width, height);
 
-            if (thickness != 0)
+            if (ThicknessIsNotZero(thickness))
                 frame = new NinePatchRegion2D(frame, thickness);
 
             return frame;
         }
 
-        private static SpriteUpdateMode ConvertUpdateModeStringToEnum(string updateMode)
+        private static bool ThicknessIsNotZero(Thickness thickness)
         {
+            return thickness.Top != 0
+                || thickness.Bottom != 0
+                || thickness.Left != 0
+                || thickness.Right != 0;
+        }
+
+        private static Thickness ReadThickness(JsonElement element, Thickness defaultThickness)
+        {
+            var result = defaultThickness;
+
+            if(element.TryGetInt32(out var padding))
+            {
+                result = new Thickness(padding);
+            }
+            else
+            {
+                if(TryGetProperty(element, out var top, "Top", "top"))
+                {
+                    result.Top = top.GetInt32();
+                }
+
+                if(TryGetProperty(element, out var left, "Left", "left"))
+                {
+                    result.Left = left.GetInt32();
+                }
+
+                if(TryGetProperty(element, out var bottom, "Bottom", "bottom"))
+                {
+                    result.Bottom = bottom.GetInt32();
+                }
+
+                if (TryGetProperty(element, out var right, "Right", "right"))
+                {
+                    result.Right = right.GetInt32();
+                }
+            }
+
+            if (result.Top < 0)
+                throw new JsonException("Invalid value for Thickness.Top. Cannot be < 0");
+
+            if (result.Left < 0)
+                throw new JsonException("Invalid value for Thickness.Left. Cannot be < 0");
+
+            if (result.Bottom < 0)
+                throw new JsonException("Invalid value for Thickness.Bottom. Cannot be < 0");
+
+            if (result.Right < 0)
+                throw new JsonException("Invalid value for Thickness.Right. Cannot be < 0");
+
+            return result;
+        }
+
+        private static JsonElement GetProperty(JsonElement element, string name)
+        {
+            return element.GetProperty(name);
+        }
+
+        private static JsonElement GetProperty(JsonElement element, string name1, string name2)
+        {
+            if(TryGetProperty(element, out var property, name1))
+                return property;
+
+            return element.GetProperty(name2);
+        }
+
+        private static JsonElement GetProperty(JsonElement element, string name1, string name2, string name3)
+        {
+            if (TryGetProperty(element, out var property, name1)
+                || TryGetProperty(element, out property, name2))
+            {
+                return property;
+            }
+
+            return element.GetProperty(name3);
+        }
+
+        private static JsonElement GetProperty(JsonElement element, params string[] propertyNames)
+        {
+            for(var i = 0; i < propertyNames.Length - 1; i++)
+            {
+                if (TryGetProperty(element, out var property, propertyNames[i]))
+                    return property;
+            }
+
+            return element.GetProperty(propertyNames[propertyNames.Length - 1]);
+        }
+
+        private static bool TryGetProperty(JsonElement element, out JsonElement property, string name)
+        {
+            if (element.TryGetProperty(name, out property))
+                return true;
+
+            property = default;
+            return false;
+        }
+
+        private static bool TryGetProperty(JsonElement element, out JsonElement property, string name1, string name2)
+        {
+            if (element.TryGetProperty(name1, out property) || element.TryGetProperty(name2, out property))
+                return true;
+
+            property = default;
+            return false;
+        }
+
+        private static bool TryGetProperty(JsonElement element, out JsonElement property, string name1, string name2, string name3)
+        {
+            if (element.TryGetProperty(name1, out property)
+                || element.TryGetProperty(name2, out property)
+                || element.TryGetProperty(name3, out property))
+            {
+                return true;
+            }
+
+            property = default;
+            return false;
+        }
+
+        private static bool TryGetProperty(JsonElement element, out JsonElement property, params string[] propertyNames)
+        {
+            foreach(var name in propertyNames)
+            {
+                if (element.TryGetProperty(name, out property))
+                    return true;
+            }
+
+            property = default;
+            return false;
+        }
+
+        private void ValidateWidth(int width)
+        {
+            if (width < 0)
+                throw new JsonException("Invalid value for Width. Cannot be < 0.");
+        }
+
+        private static SpriteUpdateMode ConvertUpdateModeStringToEnum(string? updateMode)
+        {
+            if (updateMode is null)
+                throw new JsonException("Invalid value for UpdateMode");
+
             return (SpriteUpdateMode)Enum.Parse(typeof(SpriteUpdateMode), updateMode, true);
         }
     }

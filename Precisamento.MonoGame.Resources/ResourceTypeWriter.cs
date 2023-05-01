@@ -7,6 +7,8 @@ namespace Precisamento.MonoGame.Resources
 {
     public abstract class ResourceTypeWriter
     {
+        public virtual string FileExtension => ".bin";
+
         public abstract void Write(BinaryWriter writer, object value);
     }
 

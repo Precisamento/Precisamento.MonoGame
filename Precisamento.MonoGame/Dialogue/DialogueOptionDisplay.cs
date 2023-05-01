@@ -8,7 +8,7 @@ namespace Precisamento.MonoGame.Dialogue
 {
     public class DialogueOptionDisplay
     {
-        public DialogueFrame Text { get; set; }
+        public DialogueFrame Line { get; set; }
         public int DialogueOptionId { get; set; }
         public bool IsAvailable { get; set; }
     }

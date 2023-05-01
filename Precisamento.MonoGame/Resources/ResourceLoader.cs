@@ -70,7 +70,8 @@ namespace Precisamento.MonoGame.Resources
                     return (T)asset;
                 }
 
-                T result = ReadResource<T>(name);
+                T result = ReadResource<T>(name) ?? throw new InvalidOperationException($"Failed to read resource {name}");
+
                 _loadedResources[name] = result;
 
                 if(result is IDisposable disposable)
@@ -88,7 +89,7 @@ namespace Precisamento.MonoGame.Resources
             }
         }
 
-        public T ReadResource<T>(string name)
+        private T ReadResource<T>(string name)
         {
             name = Path.Combine(Content.RootDirectory, name) + Loader<T>.Reader.FileExtension;
 
@@ -102,10 +103,8 @@ namespace Precisamento.MonoGame.Resources
 
                 // TODO: Implement Android speed increase based on MonoGame source.
 
-                using (var reader = new ResourceReader(this, stream))
-                {
-                    return Loader<T>.Reader.Read(reader);
-                }
+                using var reader = new ResourceReader(this, stream);
+                return Loader<T>.Reader.Read(reader);
             }
             catch (FileNotFoundException fileNotFound)
             {

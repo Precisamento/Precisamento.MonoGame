@@ -10,7 +10,13 @@ namespace Precisamento.MonoGame.Scenes
     {
         private static readonly List<Scene> _scenes = new List<Scene>();
 
-        public static Scene CurrentScene => _scenes[_scenes.Count - 1];
+        public static Scene? CurrentScene 
+        {
+            get
+            {
+                return _scenes.Count > 0 ? _scenes[_scenes.Count - 1] : null;
+            }
+        }
         public static ViewportAdapter ViewportAdapter { get; set; }
 
         public static void PushScene(Scene scene)

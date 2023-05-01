@@ -29,7 +29,8 @@ namespace Playground
         private IResourceLoader _loader;
         private IGameLogger _logger = new ConsoleGameLogger();
         //private string _text = "title: test\r\n---\r\n[color=red]Hello [color=blue]wor[/color]ld[/color]!\r\nThis is another line\r\nFinal test line.\r\nAnd they don't stop coming.\r\nOne more for good measure\r\nMuahaha. Out of bounds now\r\n===title: next\r\n---\r\nAnother simple string\r\nMoo\r\n===";
-        private string _text = "title: test\r\n---\r\n[just hor=center /]Hello world. [color=blue]This is [font=\"Content/Fonts/Test\"]going to[/font] be a really [/color]long [just hor=left /]line of text that must keep going in order to wrap onto the next line. So let's see how long it goes. This seems like it's good enough. Need it to wrap through to one more line.\r\nThis is another line\r\n===";
+        //private string _text = "title: test\r\n---\r\n[just hor=center /]Hello world. [color=blue]This is [font=\"Content/Fonts/Test\"]going to[/font] be a really [/color]long [just hor=left /]line of text that must keep going in order to wrap onto the next line. So let's see how long it goes. This seems like it's good enough. Need it to wrap through to one more line.\r\nThis is another line\r\n===";
+        private string _text = "title: test\r\n---[trans wait=false /]Are you a boy or girl?\r\n-> Boy\r\n    I knew you were cool.\r\n-> Girl\r\n    I knew you were cute.\r\n===";
 
 
         public Game1()
@@ -98,7 +99,7 @@ namespace Playground
         {
             var file = new CompilationJob.File() { FileName = "Test.txt", Source = programText };
             var job = new CompilationJob() { Files = new[] { file } };
-            return Compiler.Compile(job); 
+            return Compiler.Compile(job);
         }
 
         private DialogueRunner CreateDialogueRunner()

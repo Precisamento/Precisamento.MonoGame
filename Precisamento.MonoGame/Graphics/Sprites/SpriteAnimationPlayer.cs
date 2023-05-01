@@ -5,8 +5,10 @@ using MonoGame.Extended.TextureAtlases;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Yarn.Compiler;
 
 namespace Precisamento.MonoGame.Graphics
 {
@@ -14,13 +16,13 @@ namespace Precisamento.MonoGame.Graphics
     {
         private const int COMPLETE_INDEX = -1;
 
-        private SpriteAnimation _animation;
+        private SpriteAnimation? _animation;
         private int _index = -1;
         private int _direction = 1;
         private float _ticks;
         private float _maxTicks;
 
-        public SpriteAnimation Animation
+        public SpriteAnimation? Animation
         {
             get => _animation;
             set
@@ -29,7 +31,11 @@ namespace Precisamento.MonoGame.Graphics
                     return;
 
                 if (value is null)
-                    throw new ArgumentNullException(nameof(value));
+                {
+                    _animation = value;
+                    _index = COMPLETE_INDEX;
+                    return;
+                }
 
                 Paused = false;
                 _animation = value;
@@ -40,11 +46,11 @@ namespace Precisamento.MonoGame.Graphics
             }
         }
 
-        public TextureRegion2D CurrentFrame
+        public TextureRegion2D? CurrentFrame
         {
             get
             {
-                if (_index < 0 || _index >= _animation.Frames.Count)
+                if (_animation is null || _index < 0 || _index >= _animation.Frames.Count)
                     return null;
 
                 return _animation.Frames[_index];
@@ -65,7 +71,7 @@ namespace Precisamento.MonoGame.Graphics
 
         public void Update(float delta)
         {
-            if (Paused || Completed || Animation is null)
+            if (Paused || Completed || Animation is null || Animation.UpdateMode == SpriteUpdateMode.None)
                 return;
 
             _ticks += delta;
@@ -101,19 +107,29 @@ namespace Precisamento.MonoGame.Graphics
 
         public void Draw(SpriteBatchState state, Vector2 position)
         {
-            if (Completed || Animation is null)
+            if (Completed || _animation is null)
                 return;
 
             state.SpriteBatch.Draw(
-                Animation.Frames[_index].Texture,
+                CurrentFrame,
                 position,
-                Animation.Frames[_index].Bounds,
+                Color.White);
+        }
+
+        public void Draw(SpriteBatchState state, Rectangle bounds)
+        {
+            if (Completed || _animation is null)
+                return;
+
+            state.SpriteBatch.Draw(
+                CurrentFrame!,
+                bounds,
                 Color.White);
         }
 
         public void Draw(SpriteBatchState state, Transform2 transform)
         {
-            if (Completed || Animation is null)
+            if (Completed || _animation is null)
                 return;
 
             state.SpriteBatch.Draw(
@@ -130,7 +146,7 @@ namespace Precisamento.MonoGame.Graphics
 
         public void Draw(SpriteBatchState state, Vector2 position, ref SpriteDrawParams draw)
         {
-            if (Completed || Animation is null || draw.Invisible)
+            if (Completed || _animation is null || draw.Invisible)
                 return;
 
             state.SpriteBatch.Draw(
@@ -145,9 +161,20 @@ namespace Precisamento.MonoGame.Graphics
                 draw.Depth);
         }
 
+        public void Draw(SpriteBatchState state, Rectangle bounds, ref SpriteDrawParams draw)
+        {
+            if (Completed || _animation is null || draw.Invisible)
+                return;
+
+            state.SpriteBatch.Draw(
+                CurrentFrame!,
+                bounds,
+                draw.Color);
+        }
+
         public void Draw(SpriteBatchState state, Transform2 transform, ref SpriteDrawParams draw)
         {
-            if (Completed || Animation is null || draw.Invisible)
+            if (Completed || _animation is null || draw.Invisible)
                 return;
 
             state.SpriteBatch.Draw(
@@ -164,7 +191,7 @@ namespace Precisamento.MonoGame.Graphics
 
         public RectangleF GetBounds(Vector2 position)
         {
-            if (Animation is null)
+            if (_animation is null)
                 return RectangleF.Empty;
 
             return new RectangleF(position - _animation.Origin, _animation.Frames[_index].Size);
@@ -172,7 +199,7 @@ namespace Precisamento.MonoGame.Graphics
 
         public RectangleF GetBounds(Vector2 position, Vector2 scale)
         {
-            if (Animation is null)
+            if (_animation is null)
                 return RectangleF.Empty;
 
             return new RectangleF(position - _animation.Origin * scale, _animation.Frames[_index].Size * scale);
@@ -218,13 +245,13 @@ namespace Precisamento.MonoGame.Graphics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float BoundsMin(float v1, float v2, float v3, float v4)
+        private static float BoundsMin(float v1, float v2, float v3, float v4)
         {
             return Math.Min(v1, Math.Min(v2, Math.Min(v3, v4)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float BoundsMax(float v1, float v2, float v3, float v4)
+        private static float BoundsMax(float v1, float v2, float v3, float v4)
         {
             return Math.Max(v1, Math.Max(v2, Math.Max(v3, v4)));
         }

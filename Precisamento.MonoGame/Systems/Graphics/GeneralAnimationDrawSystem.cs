@@ -3,6 +3,7 @@ using DefaultEcs.System;
 using DefaultEcs.Threading;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
+using MonoGame.Extended.TextureAtlases;
 using Precisamento.MonoGame.Components;
 using Precisamento.MonoGame.Graphics;
 using System;
@@ -12,7 +13,7 @@ using System.Text;
 namespace Precisamento.MonoGame.Systems.Graphics
 {
     [With(typeof(SpriteAnimationPlayer))]
-    [With(typeof(Transform2))]
+    [WithEither(typeof(Transform2), typeof(NinePatchComponent))]
     public abstract class GeneralAnimationDrawSystem : AEntitySetSystem<SpriteBatchState>
     {
         protected GeneralAnimationDrawSystem(World world)
@@ -58,16 +59,34 @@ namespace Precisamento.MonoGame.Systems.Graphics
         protected override sealed void Update(SpriteBatchState state, in Entity entity)
         {
             ref var animationPlayer = ref entity.Get<SpriteAnimationPlayer>();
-            ref var transform = ref entity.Get<Transform2>();
 
-            if (entity.Has<SpriteDrawParams>())
+            if(entity.Has<Transform2>())
             {
-                ref var drawParams = ref entity.Get<SpriteDrawParams>();
-                animationPlayer.Draw(state, transform, ref drawParams);
+                ref var transform = ref entity.Get<Transform2>();
+
+                if (entity.Has<SpriteDrawParams>())
+                {
+                    ref var drawParams = ref entity.Get<SpriteDrawParams>();
+                    animationPlayer.Draw(state, transform, ref drawParams);
+                }
+                else
+                {
+                    animationPlayer.Draw(state, transform);
+                }
             }
             else
             {
-                animationPlayer.Draw(state, transform);
+                var bounds = entity.Get<NinePatchComponent>().Bounds;
+
+                if (entity.Has<SpriteDrawParams>())
+                {
+                    ref var drawParams = ref entity.Get<SpriteDrawParams>();
+                    animationPlayer.Draw(state, bounds, ref drawParams);
+                }
+                else
+                {
+                    animationPlayer.Draw(state, bounds);
+                }
             }
         }
     }

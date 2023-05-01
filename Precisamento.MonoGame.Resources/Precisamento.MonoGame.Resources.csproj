@@ -10,5 +10,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Precisamento.MonoGame\Precisamento.MonoGame.csproj" />
+    <ProjectReference Include="..\Soren.Extensions\Soren.Extensions\Soren.Extensions.csproj" />
   </ItemGroup>
 </Project>

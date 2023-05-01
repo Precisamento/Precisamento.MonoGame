@@ -12,6 +12,6 @@
     <PackageReference Include="YarnSpinner.Compiler" Version="2.2.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Soren.Collections\Soren.Collections\Soren.Extensions.csproj" />
+    <ProjectReference Include="..\Soren.Extensions\Soren.Extensions\Soren.Extensions.csproj" />
   </ItemGroup>
 </Project>

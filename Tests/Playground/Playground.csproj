@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
@@ -26,9 +26,9 @@
     <PackageReference Include="YarnSpinner.Compiler" Version="2.2.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Soren.Collections\Soren.Collections\Soren.Extensions.csproj" />
     <ProjectReference Include="..\..\Precisamento.MonoGame.YarnSpinner\Precisamento.MonoGame.YarnSpinner.csproj" />
     <ProjectReference Include="..\..\Precisamento.MonoGame\Precisamento.MonoGame.csproj" />
+    <ProjectReference Include="..\..\Soren.Extensions\Soren.Extensions\Soren.Extensions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Content\Sprites\MainMenuButtons.sprite">
@@ -38,5 +38,8 @@
   <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
     <Message Text="Restoring dotnet tools" Importance="High" />
     <Exec Command="dotnet tool restore" />
+  </Target>
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="$(ProjectDir)/../../Precisamento.MonoGame.Resources.Simple/bin/Debug/net6.0/ResourceProcessor --config $(ProjectDir)/Content/resources.config" />
   </Target>
 </Project>

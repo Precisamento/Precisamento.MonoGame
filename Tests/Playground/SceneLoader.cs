@@ -59,8 +59,8 @@ namespace Playground
         private static Entity CreateDialogueBox(Game game, World world, IResourceLoader resources, IActionManager actions, InputManager input, DialogueRunner runner)
         {
             var font = new SpriteFontWrapper(resources.Load<SpriteFont>("Content/Fonts/DebugFont"));
-            var borders = Sprite.FromJson("Content/Sprites/MainMenuButtons.sprite", resources);
-            // var borders = resources.Load<Sprite>("Content/Sprites/MainMenuButtons");
+            // var borders = Sprite.FromJson("Content/Sprites/MainMenuButtons.sprite", resources);
+            var borders = resources.Load<Sprite>("Content/Sprites/MainMenuButtons");
 
             var entity = world.CreateEntity();
 
@@ -84,6 +84,17 @@ namespace Playground
                     return 0;
                 })
                 .SetDismiss(entity)
+                .SetOptionLocation(DialogueOptionRenderLocation.Inline)
+                .SetOptionBoxBackground(borders.Animations["Normal"].Frames[0])
+                .SetOptionBoxPadding(new Thickness(25, 10, 12, 10))
+                .SetOptionBoxOffset(new Point(0, 5))
+                .SetOptionMargin(5)
+                .SetOptionBackground(borders.Animations["SelectBackground"])
+                .SetOptionBackgroundPadding(new Thickness(5, 1))
+                .SetOptionSelectIcon(borders.Animations["Cursor"])
+                .SetOptionSelectIconLocation(SelectIconLocation.Left)
+                .SetOptionSelectIconOffset(new Point(-7, 0))
+                .SetOptionMoveSelection(actions, (int)Actions.Up, (int)Actions.Down)
                 .Build();
 
             dialogue.AttachToRunner(runner);

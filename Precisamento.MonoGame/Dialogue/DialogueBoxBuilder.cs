@@ -24,14 +24,12 @@ namespace Precisamento.MonoGame.Dialogue
         public DialogueBoxBuilder SetContinuePressed(Func<bool> continuedPressed)
         {
             _options.ContinuePressed = continuedPressed;
+            _options.OptionSelected = continuedPressed;
             return this;
         }
 
         public DialogueBoxBuilder SetContinuePressed(IActionManager actionManager, int action)
-        {
-            _options.ContinuePressed = () => actionManager.ActionCheckPressed(action);
-            return this;
-        }
+            => SetContinuePressed(() => actionManager.ActionCheckPressed(action));
 
         public DialogueBoxBuilder SetContinuePressed(IActionManager actionManager, int action, int player)
         {
@@ -96,6 +94,7 @@ namespace Precisamento.MonoGame.Dialogue
         public DialogueBoxBuilder SetPadding(Thickness padding)
         {
             _options.Padding = padding;
+            _options.OptionBoxPadding = padding;
             return this;
         }
 
@@ -116,6 +115,84 @@ namespace Precisamento.MonoGame.Dialogue
             _options.SentenceSplitter = splitter;
             return this;
         }
+
+        public DialogueBoxBuilder SetOptionLocation(DialogueOptionRenderLocation location)
+        {
+            _options.OptionRenderLocation = location;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionBoxBackground(TextureRegion2D background)
+        {
+            _options.OptionBoxWindowBackground = background;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionBoxPadding(Thickness padding)
+        {
+            _options.OptionBoxPadding = padding;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionBoxOffset(Point offset)
+        {
+            _options.OptionBoxOffset = offset;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionMargin(int margin)
+        {
+            _options.OptionMargin = margin;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionBackground(SpriteAnimation optionBackground)
+        {
+            _options.OptionBackground = optionBackground;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionBackgroundPadding(Thickness padding)
+        {
+            _options.OptionBackgroundPadding = padding;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionSelectIcon(SpriteAnimation optionSelectIcon)
+        {
+            _options.OptionSelectIcon = optionSelectIcon;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionSelectIconLocation(SelectIconLocation selectIconLocation)
+        {
+            _options.OptionSelectIconLocation = selectIconLocation;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionSelectIconOffset(Point offset)
+        {
+            _options.OptionSelectIconOffset = offset;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionMoveSelection(Func<int> optionMoveSelection)
+        {
+            _options.OptionMoveSelection = optionMoveSelection;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionMoveSelection(IActionManager actionManager, int actionUp, int actionDown)
+            => SetOptionMoveSelection(() =>
+            {
+                if (actionManager.ActionCheck(actionUp))
+                    return -1;
+
+                if (actionManager.ActionCheck(actionDown))
+                    return 1;
+
+                return 0;
+            });
 
         public DialogueBox Build()
         {
