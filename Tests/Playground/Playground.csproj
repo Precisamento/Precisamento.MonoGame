@@ -40,6 +40,6 @@
     <Exec Command="dotnet tool restore" />
   </Target>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="$(ProjectDir)/../../Precisamento.MonoGame.Resources.Simple/bin/Debug/net6.0/ResourceProcessor --config $(ProjectDir)/Content/resources.config" />
+    <Exec Command="$(ProjectDir)/../../Precisamento.MonoGame.Resources.Cli/bin/Debug/net6.0/win-x64/ResourceProcessor --config $(ProjectDir)/Content/resources.config" />
   </Target>
 </Project>

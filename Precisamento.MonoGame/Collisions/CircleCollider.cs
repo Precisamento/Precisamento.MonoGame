@@ -83,6 +83,11 @@ namespace Precisamento.MonoGame.Collisions
             }
         }
 
+        public CircleCollider(float radius)
+        {
+            OriginalRadius = radius;
+        }
+
         public override bool Overlaps(Collider other)
         {
             switch(other.ColliderType)
@@ -93,17 +98,17 @@ namespace Precisamento.MonoGame.Collisions
                         return Overlaps(point.InternalCollider);
                     return ContainsPoint(point.Position);
                 case ColliderType.Line:
-                    return Collisions.LineToCircle((LineCollider)other, this);
+                    return CollisionChecks.LineToCircle((LineCollider)other, this);
                 case ColliderType.Circle:
-                    return Collisions.CircleToCircle(this, (CircleCollider)other);
+                    return CollisionChecks.CircleToCircle(this, (CircleCollider)other);
                 case ColliderType.Box:
                     var box = (BoxCollider)other;
                     if (box.IsUnrotated)
-                        return Collisions.CircleToBox(this, (BoxCollider)other);
+                        return CollisionChecks.CircleToBox(this, (BoxCollider)other);
                     else
-                        return Collisions.CircleToPolygon(this, box);
+                        return CollisionChecks.CircleToPolygon(this, box);
                 case ColliderType.Polygon:
-                    return Collisions.CircleToPolygon(this, (PolygonCollider)other);
+                    return CollisionChecks.CircleToPolygon(this, (PolygonCollider)other);
             }
 
             throw new NotImplementedException($"Overlaps of Circle to {other.GetType()} are not supported.");
@@ -118,42 +123,42 @@ namespace Precisamento.MonoGame.Collisions
                     var point = (PointCollider)other;
                     if (point.InternalCollider != point)
                         return CollidesWithShape(point.InternalCollider, out collision, out ray);
-                    return Collisions.PointToCircle(point.Position, this, out collision);
+                    return CollisionChecks.PointToCircle(point.Position, this, out collision);
                 case ColliderType.Line:
                     collision = default;
-                    return Collisions.LineToCircle((LineCollider)other, this, out ray);
+                    return CollisionChecks.LineToCircle((LineCollider)other, this, out ray);
                 case ColliderType.Circle:
-                    return Collisions.CircleToCircle(this, (CircleCollider)other, out collision);
+                    return CollisionChecks.CircleToCircle(this, (CircleCollider)other, out collision);
                 case ColliderType.Box:
                     var box = (BoxCollider)other;
                     if (box.IsUnrotated)
-                        return Collisions.CircleToBox(this, (BoxCollider)other, out collision);
+                        return CollisionChecks.CircleToBox(this, (BoxCollider)other, out collision);
                     else
-                        return Collisions.CircleToPolygon(this, box, out collision);
+                        return CollisionChecks.CircleToPolygon(this, box, out collision);
                 case ColliderType.Polygon:
-                    return Collisions.CircleToPolygon(this, (PolygonCollider)other, out collision);
+                    return CollisionChecks.CircleToPolygon(this, (PolygonCollider)other, out collision);
             }
 
             throw new NotImplementedException($"Overlaps of Circle to {other.GetType()} are not supported.");
         }
 
         public override bool CollidesWithRect(RectangleF rect)
-            => Collisions.CircleToBox(this, rect);
+            => CollisionChecks.CircleToBox(this, rect);
 
         public override bool CollidesWithRect(RectangleF rect, out CollisionResult result)
-            => Collisions.CircleToBox(this, rect, out result);
+            => CollisionChecks.CircleToBox(this, rect, out result);
 
         public override bool CollidesWithLine(Vector2 start, Vector2 end)
-            => Collisions.LineToCircle(start, end, this);
+            => CollisionChecks.LineToCircle(start, end, this);
 
         public override bool CollidesWithLine(Vector2 start, Vector2 end, out RaycastHit hit)
-            => Collisions.LineToCircle(start, end, this, out hit);
+            => CollisionChecks.LineToCircle(start, end, this, out hit);
 
         public override bool CollidesWithPoint(Vector2 point, out CollisionResult result)
-            => Collisions.PointToCircle(point, this, out result);
+            => CollisionChecks.PointToCircle(point, this, out result);
 
         public override bool ContainsPoint(Vector2 point)
-            => Collisions.PointToCircle(point, this);
+            => CollisionChecks.PointToCircle(point, this);
 
         public override void DebugDraw(SpriteBatch spriteBatch, Color color) 
             => Primitives2D.DrawCircle(spriteBatch, Position, Radius, 16, color);
@@ -164,7 +169,7 @@ namespace Precisamento.MonoGame.Collisions
                 return;
 
             _radius = _originalRadius * _scale;
-            _boundingBox = new RectangleF(Position.X - Radius, Position.Y - Radius, Radius * 2, Radius * 2);
+            _boundingBox = new RectangleF(Position.X - _radius, Position.Y - _radius, _radius * 2, _radius * 2);
 
             _dirty = false;
         }

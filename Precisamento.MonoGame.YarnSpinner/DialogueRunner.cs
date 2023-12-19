@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
-using Soren.Extensions.Collections;
-using Soren.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -53,7 +52,7 @@ namespace Precisamento.MonoGame.YarnSpinner
         /// <summary>
         /// An adapter that can be used to capture log events.
         /// </summary>
-        public LogAdapter? Logger { get; private set; }
+        public ILogger? Logger { get; private set; }
 
         /// <summary>
         /// Gets the name of the current node that is being run.
@@ -186,7 +185,7 @@ namespace Precisamento.MonoGame.YarnSpinner
                 LogDebugMessage = message =>
                 {
                     if (VerboseLogging)
-                        Logger?.Info(message);
+                        Logger?.LogInformation("{Message}", message);
                 },
 
                 LogErrorMessage = Error,
@@ -215,7 +214,7 @@ namespace Precisamento.MonoGame.YarnSpinner
             Dialogue.LogDebugMessage = message =>
             {
                 if (VerboseLogging)
-                    Logger?.Info(message);
+                    Logger?.LogInformation("{Message}", message);
             };
 
             Dialogue.LogErrorMessage = Error;
@@ -483,7 +482,7 @@ namespace Precisamento.MonoGame.YarnSpinner
         private void Warning(string message, Exception? ex)
         {
             var exception = new InvalidOperationException(message, ex);
-            Logger?.Warning(message, exception);
+            Logger?.LogWarning(exception, "{Message}", message);
             if (ThrowOnWarning)
                 throw exception;
         }
@@ -493,7 +492,7 @@ namespace Precisamento.MonoGame.YarnSpinner
         private void Error(string message, Exception? ex)
         {
             var exception = new InvalidOperationException(message, ex);
-            Logger?.Error(message, exception);
+            Logger?.LogError(exception, "{Message}", message);
             if (ThrowOnError)
                 throw exception;
         }

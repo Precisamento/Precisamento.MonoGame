@@ -1,6 +1,7 @@
 ﻿using DefaultEcs.System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Input.Touch;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -27,6 +28,9 @@ namespace Precisamento.MonoGame.Input
         public bool MouseMoved => _mouseCurrent.Position != _mousePrevious.Position;
         public int MouseVerticalScrollWheelValue => _mouseCurrent.ScrollWheelValue;
         public int MouseHorizontalScrollWheelValue => _mouseCurrent.HorizontalScrollWheelValue;
+
+        public TouchCollection TouchCurrent { get; set; }
+        public TouchCollection TouchPrevious { get; set; }
 
         public InputManager()
         {
@@ -246,6 +250,8 @@ namespace Precisamento.MonoGame.Input
             _keyboardCurrent = Keyboard.GetState();
             _mousePrevious = _mouseCurrent;
             _mouseCurrent = Mouse.GetState();
+            TouchPrevious = TouchCurrent;
+            TouchCurrent = TouchPanel.GetState();
 
             for (int i = 0; i < GamePad.MaximumGamePadCount; i++)
             {

@@ -1,18 +1,27 @@
 ﻿using Microsoft.Xna.Framework;
 using MonoGame.Extended;
+using MonoGame.Extended.Shapes;
 using Precisamento.MonoGame.MathHelpers;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Yarn.Compiler;
 
 namespace Precisamento.MonoGame.Collisions
 {
-    public static partial class Collisions
+    public static partial class CollisionChecks
     {
         public static bool PointToCircle(Vector2 point, CircleCollider circle)
         {
             var distanceSquared = Vector2.DistanceSquared(point, circle.Position);
             var sumOfRadii = 1 + circle.Radius;
+            return distanceSquared < circle.Radius * circle.Radius;
+        }
+
+        public static bool PointToCircle(Vector2 point, Vector2 position, float radius)
+        {
+            var distanceSquared = Vector2.DistanceSquared(point, position);
+            var sumOfRadii = 1 + radius;
             return distanceSquared < sumOfRadii * sumOfRadii;
         }
 
@@ -54,7 +63,20 @@ namespace Precisamento.MonoGame.Collisions
 
         public static bool PointToPoly(Vector2 point, PolygonCollider poly)
         {
-            return poly.ContainsPoint(point);
+            point -= poly.Position - poly.Center;
+
+            var inside = false;
+            for(int i = 0, j = poly.Points.Length - 1; i < poly.Points.Length; j = i++)
+            {
+                if (((poly.Points[i].Y > point.Y) != (poly.Points[j].Y > point.Y))
+                    && (point.X < (poly.Points[j].X - poly.Points[i].X) * (point.Y - poly.Points[i].Y) / (poly.Points[j].Y - poly.Points[i].Y) 
+                    + poly.Points[i].X))
+                {
+                    inside = !inside;
+                }
+            }
+
+            return inside;
         }
 
         public static bool PointToPoly(Vector2 point, PolygonCollider poly, out CollisionResult result)
@@ -63,10 +85,10 @@ namespace Precisamento.MonoGame.Collisions
 
             if (poly.ContainsPoint(point))
             {
-                var closestPoint = PolygonCollider.GetClosestPointOnPolygonToPoint(poly.Points, point - poly.Position, out float distanceSquared, out result.Normal);
+                var closestPoint = PolygonCollider.GetClosestPointOnPolygonToPoint(poly.Points, point - poly.Position - poly.Center, out float distanceSquared, out result.Normal);
 
                 result.MinimumTranslationVector = result.Normal * MathF.Sqrt(distanceSquared);
-                result.Point = closestPoint + poly.Position;
+                result.Point = closestPoint + poly.Position - poly.Center;
 
                 return true;
             }

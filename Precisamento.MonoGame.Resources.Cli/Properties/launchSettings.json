@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Precisamento.MonoGame.Resources.Cli": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Users\\chris\\source\\csharp\\Precisamento.MonoGame\\Tests\\Examples\\Content"
+    }
+  }
+}

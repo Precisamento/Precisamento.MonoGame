@@ -7,6 +7,7 @@ using Precisamento.MonoGame.Components;
 using Precisamento.MonoGame.MathHelpers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -17,7 +18,6 @@ namespace Precisamento.MonoGame.Systems.Collisions
     public class MovementSystem : AEntitySetSystem<float>
     {
         private ICollisionWorld _collisionWorld;
-        private HashSet<Collider> _cache = new HashSet<Collider>();
 
         public MovementSystem(ICollisionWorld collisionWorld, EntitySet set, bool useBuffer)
             : base(set, useBuffer)
@@ -52,56 +52,25 @@ namespace Precisamento.MonoGame.Systems.Collisions
         protected override void Update(float deltaTime, in Entity entity)
         {
             ref var velocity = ref entity.Get<VelocityComponent>();
-            if (velocity.Velocity == Vector2.Zero)
+            if (velocity.Delta.Position == Vector2.Zero
+                && velocity.Delta.Rotation == 0
+                && velocity.Delta.Scale == Vector2.Zero)
+            {
                 return;
-
-            var movementDelta = velocity.Velocity;
+            }
 
             if(entity.Has<Transform2>())
             {
                 ref var transform = ref entity.Get<Transform2>();
-                transform.Position += movementDelta;
+                transform.Position += velocity.Delta.Position;
+                transform.Rotation += velocity.Delta.Rotation;
+                transform.Scale += velocity.Delta.Scale;
             }
 
             if(entity.Has<Collider>())
             {
                 ref var collider = ref entity.Get<Collider>();
-
-                _collisionWorld.Move(collider, movementDelta);
-
-                if(_collisionWorld.Collisions(collider, _cache))
-                {
-                    var mtv = Vector2.Zero;
-                    float longestDistance = 0;
-
-                    foreach(var other in _cache)
-                    {
-                        collider.CollidesWithShape(other, out var collision, out var ray);
-
-                        if(collision.MinimumTranslationVector != Vector2.Zero)
-                        {
-                            var distance = collision.MinimumTranslationVector.LengthSquared();
-                            if(distance > longestDistance)
-                            {
-                                mtv = collision.MinimumTranslationVector;
-                                longestDistance = distance;
-                            }
-                        }
-                        else if(ray.Distance != 0)
-                        {
-                            // Todo: Validate ray collision handler.
-                            if(ray.Distance * ray.Distance > longestDistance)
-                            {
-                                mtv = ray.Point;
-                                longestDistance = ray.Distance * ray.Distance;
-                            }
-                        }
-                    }
-
-                    _collisionWorld.Move(collider, -mtv);
-                }
-
-                _cache.Clear();
+                _collisionWorld.MoveTransform(collider, velocity.Delta);
             }
         }
     }

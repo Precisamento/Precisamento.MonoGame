@@ -8,7 +8,6 @@ using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.Input;
 using Precisamento.MonoGame.MathHelpers;
 using Precisamento.MonoGame.YarnSpinner;
-using Soren.Extensions.Collections;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -38,6 +37,7 @@ namespace Precisamento.MonoGame.Dialogue
         private Rectangle _bounds;
         private DialogueState _state;
         private bool _running = false;
+        private bool _firstLineFromStart = false;
         private int _startingLineIndex = 0;
         private List<DialogueFrame> _frames = new List<DialogueFrame>();
         private int _line = 0;
@@ -366,6 +366,10 @@ namespace Precisamento.MonoGame.Dialogue
         private void OnDialogueStarted(object? sender, EventArgs e)
         {
             _running = true;
+            _firstLineFromStart = true;
+            _spriteBatchState.SetRenderTarget(_texture);
+            _spriteBatchState.GraphicsDevice.Clear(Color.Transparent);
+            _spriteBatchState.SetRenderTarget(null);
         }
 
         private void OnDialogueCompleted(object? sender, EventArgs e)
@@ -384,9 +388,10 @@ namespace Precisamento.MonoGame.Dialogue
 
             var frame = CreateFrame(line, _state, false);
 
-            if (_state.LineTransition != LineTransitionBehavior.NewLine)
+            if (_firstLineFromStart || _state.LineTransition != LineTransitionBehavior.NewLine)
             {
                 _startingLineIndex = frame.LineStart;
+                _firstLineFromStart = false;
             }
             else
             {
@@ -736,7 +741,7 @@ namespace Precisamento.MonoGame.Dialogue
                     position.Y = _optionWindowOffset.Y - _bounds.Height / 2;
                     break;
                 default:
-                    throw new InvalidOperationException($"Invalid render position for ${nameof(DialogueOptionWindow)}: {_optionWindowLocation}");
+                    throw new InvalidOperationException($"Invalid render position: {_optionWindowLocation}");
             }
 
             _bounds.Location = position;

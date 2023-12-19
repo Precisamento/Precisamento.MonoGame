@@ -52,7 +52,7 @@ namespace Precisamento.MonoGame.Collisions
         /// <summary>
         /// A generic tag that can be used to hold context information about the collider, such as what object it's attached to.
         /// </summary>
-        public object Tag { get; set; }
+        public object? Tag { get; set; }
 
         /// <summary>
         /// A generic id that can be used to hold context information about the collider, such as the ID of the object it's attached to.

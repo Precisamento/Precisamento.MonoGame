@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using MonoGame.Extended.Shapes;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -6,14 +7,14 @@ using System.Text;
 
 namespace Precisamento.MonoGame.Collisions
 {
-    public static partial class Collisions
+    public static partial class CollisionChecks
     {
         public static bool PolygonToPolygon(PolygonCollider first, PolygonCollider second)
         {
             var isIntersecting = true;
             var firstEdges = first.EdgeNormals;
             var secondEdges = second.EdgeNormals;
-            var polygonOffset = first.Position - second.Position;
+            var polygonOffset = first.Position - first.Center - second.Position - second.Center;
             Vector2 axis;
 
             // Loop through all the edges of both polygons
@@ -64,7 +65,7 @@ namespace Precisamento.MonoGame.Collisions
             var secondEdges = second.EdgeNormals;
             var minIntervalDistance = float.PositiveInfinity;
             var translationAxis = new Vector2();
-            var polygonOffset = first.Position - second.Position;
+            var polygonOffset = first.Position - first.Center - second.Position - second.Center;
             Vector2 axis;
 
             // Loop through all the edges of both polygons

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Soren.Extensions.Collections;
 using MonoGame.Extended;
 
 namespace Precisamento.MonoGame.Dialogue
@@ -262,7 +261,9 @@ namespace Precisamento.MonoGame.Dialogue
 
             for (var j = _processorStack.Count - 1; j >= 0; j--)
             {
-                _processorStack.Pop().Pop(dialogueState);
+                var last = _processorStack[j];
+                _processorStack.RemoveAt(j);
+                last.Pop(dialogueState);
             }
 
             return doneDrawing;

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Precisamento.MonoGame.Collisions
 {
-    public static partial class Collisions
+    public static partial class CollisionChecks
     {
         public static bool CircleToCircle(CircleCollider first, CircleCollider second)
         {
@@ -104,7 +104,7 @@ namespace Precisamento.MonoGame.Collisions
         {
 
             // circle TruePosition in the polygons coordinates
-            var poly2Circle = circle.Position - polygon.Position;
+            var poly2Circle = circle.Position - polygon.Position - polygon.Center;
 
             // first, we need to find the closest distance from the circle to the polygon
             var closestPoint = PolygonCollider.GetClosestPointOnPolygonToPoint(polygon.Points, poly2Circle, out float distanceSquared);
@@ -121,7 +121,7 @@ namespace Precisamento.MonoGame.Collisions
             result = new CollisionResult();
 
             // circle TruePosition in the polygons coordinates
-            var poly2Circle = circle.Position - polygon.Position;
+            var poly2Circle = circle.Position - polygon.Position - polygon.Center;
 
             // first, we need to find the closest distance from the circle to the polygon
             var closestPoint = PolygonCollider.GetClosestPointOnPolygonToPoint(polygon.Points, poly2Circle, out float distanceSquared, out result.Normal);
@@ -152,7 +152,7 @@ namespace Precisamento.MonoGame.Collisions
             }
 
             result.MinimumTranslationVector = mtv;
-            result.Point = closestPoint + polygon.Position;
+            result.Point = closestPoint + polygon.Position - polygon.Center;
 
             return true;
         }

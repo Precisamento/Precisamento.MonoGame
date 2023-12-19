@@ -1,4 +1,4 @@
-﻿using Soren.Extensions.Collections;
+﻿using Precisamento.MonoGame.YarnSpinner.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;

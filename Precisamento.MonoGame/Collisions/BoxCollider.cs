@@ -84,13 +84,13 @@ namespace Precisamento.MonoGame.Collisions
                             return Overlaps(point.InternalCollider);
                         return BoundingBox.Contains(point.Position);
                     case ColliderType.Circle:
-                        return Collisions.CircleToBox((CircleCollider)other, this);
+                        return CollisionChecks.CircleToBox((CircleCollider)other, this);
                     case ColliderType.Box:
                         var box = (BoxCollider)other;
                         if (box.IsUnrotated)
                             return BoundingBox.Intersects(other.BoundingBox);
                         else
-                            return Collisions.PolygonToPolygon(this, (PolygonCollider)other);
+                            return CollisionChecks.PolygonToPolygon(this, (PolygonCollider)other);
                 }
             }
 
@@ -108,15 +108,15 @@ namespace Precisamento.MonoGame.Collisions
                         var point = (PointCollider)other;
                         if (point.InternalCollider != point)
                             return CollidesWithShape(point.InternalCollider, out collision, out ray);
-                        return Collisions.PointToBox(point.Position, this, out collision);
+                        return CollisionChecks.PointToBox(point.Position, this, out collision);
                     case ColliderType.Circle:
-                        return Collisions.CircleToBox((CircleCollider)other, this, out collision);
+                        return CollisionChecks.CircleToBox((CircleCollider)other, this, out collision);
                     case ColliderType.Box:
                         var box = (BoxCollider)other;
                         if (box.IsUnrotated)
-                            return Collisions.BoxToBox(this, box, out collision);
+                            return CollisionChecks.BoxToBox(this, box, out collision);
                         else
-                            return Collisions.PolygonToPolygon(this, (PolygonCollider)other, out collision);
+                            return CollisionChecks.PolygonToPolygon(this, (PolygonCollider)other, out collision);
                 }
             }
 
@@ -134,7 +134,7 @@ namespace Precisamento.MonoGame.Collisions
         public override bool CollidesWithRect(RectangleF rect, out CollisionResult result)
         {
             if (IsUnrotated)
-                return Collisions.BoxToBox(this, rect, out result);
+                return CollisionChecks.BoxToBox(this, rect, out result);
             else
                 return base.CollidesWithRect(rect, out result);
         }
@@ -150,7 +150,7 @@ namespace Precisamento.MonoGame.Collisions
         public override bool CollidesWithPoint(Vector2 point, out CollisionResult result)
         {
             if (IsUnrotated)
-                return Collisions.PointToBox(point, this, out result);
+                return CollisionChecks.PointToBox(point, this, out result);
             else
                 return base.CollidesWithPoint(point, out result);
         }

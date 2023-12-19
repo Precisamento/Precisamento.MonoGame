@@ -40,6 +40,10 @@ namespace Precisamento.MonoGame.MathHelpers
             return vec;
         }
 
+        public static bool IsEmpty(this Vector2 vec)
+        {
+            return vec.X == 0 && vec.Y == 0;
+        }
 
         /// <summary>
         /// rounds the x and y values

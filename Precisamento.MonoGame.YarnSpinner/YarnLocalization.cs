@@ -10,6 +10,32 @@ namespace Precisamento.MonoGame.YarnSpinner
 {
     public class YarnLocalization
     {
+        /// <summary>
+        /// Determines the behavior to use when adding a <see cref="YarnLocale"/> that already has a matching locale key loaded.
+        /// </summary>
+        public enum MergeBehavior
+        {
+            /// <summary>
+            /// Updates the existing locale, only adding new lines.
+            /// </summary>
+            AddNew,
+
+            /// <summary>
+            /// Updates the existing locale, overwriting existing lines and adding new ones.
+            /// </summary>
+            AddReplace,
+
+            /// <summary>
+            /// Completely replaces the old locale with the new one.
+            /// </summary>
+            Overwrite,
+
+            /// <summary>
+            /// Throw an exception for trying to add the same locale twice.
+            /// </summary>
+            Throw
+        }
+
         private string[] _emptyMetadata = Array.Empty<string>();
 
         public YarnLocale BaseLocale { get; set; }
@@ -49,6 +75,33 @@ namespace Precisamento.MonoGame.YarnSpinner
                 return value;
 
             return _emptyMetadata;
+        }
+
+        public void AddLocale(YarnLocale locale, MergeBehavior mergeBehavior = MergeBehavior.AddNew)
+        {
+            if (Locales.TryGetValue(locale.Locale, out var other))
+            {
+                switch (mergeBehavior)
+                {
+                    case MergeBehavior.Overwrite:
+                        Locales[locale.Locale] = locale;
+                        break;
+                    case MergeBehavior.Throw:
+                        throw new ArgumentException($"Locale {locale.Locale} already exists", nameof(locale));
+                    case MergeBehavior.AddNew:
+                        foreach(var kvp in locale.StringTable)
+                            other.StringTable.TryAdd(kvp.Key, kvp.Value);
+                        break;
+                    case MergeBehavior.AddReplace:
+                        foreach(var kvp in locale.StringTable)
+                            other.StringTable[kvp.Key] = kvp.Value;
+                        break;
+                }
+            }
+            else
+            {
+                Locales[locale.Locale] = locale;
+            }
         }
 
         public YarnLocale LoadLocale(string localeName, string path)

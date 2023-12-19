@@ -68,6 +68,20 @@ namespace Precisamento.MonoGame.Collisions
         void SetScale(Collider collider, float scale);
 
         /// <summary>
+        /// Displaces the collider by the amounts in the transform. Do not mix-and-match with setting the properties directly in <see cref="Collider"/>.
+        /// </summary>
+        /// <param name="collider">The collider to transform.</param>
+        /// <param name="transform">The values to transform the collider by.</param>
+        void MoveTransform(Collider collider, Transform2 transform);
+
+        /// <summary>
+        /// Sets the transform data of a collider.
+        /// </summary>
+        /// <param name="collider">The collider to transform.</param>
+        /// <param name="transform">The values to transform the collider to.</param>
+        void SetTransform(Collider collider, Transform2 transform);
+
+        /// <summary>
         /// Determines if the point collides with any colliders.
         /// </summary>
         /// <param name="point">The position to check.</param>

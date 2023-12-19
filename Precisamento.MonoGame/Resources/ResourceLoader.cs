@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using MonoGame.Extended.Content;
+using Precisamento.MonoGame.Dialogue;
 using Precisamento.MonoGame.Graphics;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace Precisamento.MonoGame.Resources
         static ResourceLoader()
         {
             RegisterLoader<Sprite>(new SpriteReader());
+            RegisterLoader<DialogueData>(new DialogueReader());
         }
 
         private Dictionary<string, object> _loadedResources = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);

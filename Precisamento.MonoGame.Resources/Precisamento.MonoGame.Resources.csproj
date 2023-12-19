@@ -7,8 +7,10 @@
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="YarnSpinner.Compiler" Version="2.4.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Precisamento.MonoGame.YarnSpinner\Precisamento.MonoGame.YarnSpinner.csproj" />
     <ProjectReference Include="..\Precisamento.MonoGame\Precisamento.MonoGame.csproj" />
     <ProjectReference Include="..\Soren.Extensions\Soren.Extensions\Soren.Extensions.csproj" />
   </ItemGroup>

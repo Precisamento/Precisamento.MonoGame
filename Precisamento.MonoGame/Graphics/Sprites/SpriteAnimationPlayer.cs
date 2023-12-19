@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.TextureAtlases;
+using Precisamento.MonoGame.MathHelpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -112,7 +113,7 @@ namespace Precisamento.MonoGame.Graphics
 
             state.SpriteBatch.Draw(
                 CurrentFrame,
-                position,
+                Vector2Ext.Round(position),
                 Color.White);
         }
 
@@ -134,7 +135,7 @@ namespace Precisamento.MonoGame.Graphics
 
             state.SpriteBatch.Draw(
                 Animation.Frames[_index].Texture,
-                transform.Position,
+                Vector2Ext.Round(transform.Position),
                 Animation.Frames[_index].Bounds,
                 Color.White,
                 transform.Rotation,
@@ -151,7 +152,7 @@ namespace Precisamento.MonoGame.Graphics
 
             state.SpriteBatch.Draw(
                 Animation.Frames[_index].Texture,
-                position,
+                Vector2Ext.Round(position),
                 Animation.Frames[_index].Bounds,
                 draw.Color,
                 0f,
@@ -179,7 +180,7 @@ namespace Precisamento.MonoGame.Graphics
 
             state.SpriteBatch.Draw(
                 Animation.Frames[_index].Texture,
-                transform.Position,
+                Vector2Ext.Round(transform.Position),
                 Animation.Frames[_index].Bounds,
                 draw.Color,
                 transform.Rotation,

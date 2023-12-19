@@ -147,7 +147,7 @@ namespace Precisamento.MonoGame.Collisions
             {
                 if (value != _originalCenter)
                 {
-                    if (!Collisions.PointToLine(value, OriginalStart, OriginalEnd))
+                    if (!CollisionChecks.PointToLine(value, OriginalStart, OriginalEnd))
                         throw new ArgumentOutOfRangeException(
                             nameof(value),
                             $"OriginalCenter must be on the line between " +
@@ -169,15 +169,15 @@ namespace Precisamento.MonoGame.Collisions
                     var point = (PointCollider)other;
                     if (point.InternalCollider != point)
                         return Overlaps(point.InternalCollider);
-                    return Collisions.PointToLine(point, this);
+                    return CollisionChecks.PointToLine(point, this);
                 case ColliderType.Line:
                     var line = (LineCollider)other;
-                    return Collisions.LineToLine(this, line.AdjustedStart, line.AdjustedEnd);
+                    return CollisionChecks.LineToLine(this, line.AdjustedStart, line.AdjustedEnd);
                 case ColliderType.Circle:
-                    return Collisions.LineToCircle(this, (CircleCollider)other);
+                    return CollisionChecks.LineToCircle(this, (CircleCollider)other);
                 case ColliderType.Box:
                 case ColliderType.Polygon:
-                    return Collisions.LineToPoly(this, (PolygonCollider)other);
+                    return CollisionChecks.LineToPoly(this, (PolygonCollider)other);
             }
 
             throw new NotImplementedException($"Overlaps of Line to {other.GetType()} are not supported.");
@@ -194,16 +194,16 @@ namespace Precisamento.MonoGame.Collisions
                     if (point.InternalCollider != point)
                         return CollidesWithShape(point.InternalCollider, out collision, out ray);
                     ray = default;
-                    return Collisions.PointToLine(point, this, out collision);
+                    return CollisionChecks.PointToLine(point, this, out collision);
                 case ColliderType.Line:
                     var line = (LineCollider)other;
                     ray = default;
-                    return Collisions.LineToLine(this, line.AdjustedStart, line.AdjustedEnd, out collision);
+                    return CollisionChecks.LineToLine(this, line.AdjustedStart, line.AdjustedEnd, out collision);
                 case ColliderType.Circle:
-                    return Collisions.LineToCircle(this, (CircleCollider)other, out ray);
+                    return CollisionChecks.LineToCircle(this, (CircleCollider)other, out ray);
                 case ColliderType.Box:
                 case ColliderType.Polygon:
-                    return Collisions.LineToPoly(this, (PolygonCollider)other, out ray);
+                    return CollisionChecks.LineToPoly(this, (PolygonCollider)other, out ray);
             }
 
             throw new NotImplementedException($"Overlaps of Line to {other.GetType()} are not supported.");
@@ -211,23 +211,23 @@ namespace Precisamento.MonoGame.Collisions
 
         public override bool CollidesWithLine(Vector2 start, Vector2 end)
         {
-            return Collisions.LineToLine(this, start, end);
+            return CollisionChecks.LineToLine(this, start, end);
         }
 
         public override bool CollidesWithLine(Vector2 start, Vector2 end, out RaycastHit hit)
         {
             hit = default;
-            return Collisions.LineToLine(this, start, end);
+            return CollisionChecks.LineToLine(this, start, end);
         }
 
         public override bool ContainsPoint(Vector2 point)
         {
-            return Collisions.PointToLine(point, this);
+            return CollisionChecks.PointToLine(point, this);
         }
 
         public override bool CollidesWithPoint(Vector2 point, out CollisionResult result)
         {
-            return Collisions.PointToLine(point, this, out result);
+            return CollisionChecks.PointToLine(point, this, out result);
         }
 
         public override void DebugDraw(SpriteBatch spriteBatch, Color color) =>

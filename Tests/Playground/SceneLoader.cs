@@ -43,7 +43,6 @@ namespace Playground
                 },
                 new ISystem<SpriteBatchState>[]
                 {
-                    new NinePatchDrawSystem(world),
                     new AnimationDrawSystem(world),
                     new DialogueDrawSystem(world),
                     new ColliderDebugSystem(Color.Red, world)

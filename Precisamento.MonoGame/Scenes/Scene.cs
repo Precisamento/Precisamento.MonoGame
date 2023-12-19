@@ -1,4 +1,5 @@
 ﻿using DefaultEcs;
+using DefaultEcs.Command;
 using DefaultEcs.System;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
@@ -14,9 +15,20 @@ namespace Precisamento.MonoGame.Scenes
         private SequentialSystem<float> _update;
         private SequentialSystem<SpriteBatchState> _draw;
         private SequentialSystem<SpriteBatchState> _gui;
+        private EntityCommandRecorder? _recorder;
+        private bool _disposed;
 
         public World World { get; }
         public Camera<Vector2> Camera { get; }
+        public EntityCommandRecorder Recorder
+        {
+            get
+            {
+                if (_recorder is null)
+                    _recorder = new EntityCommandRecorder();
+                return _recorder;
+            }
+        }
 
         public Scene(World world,
                      ISystem<float>[] updateSystems,
@@ -46,6 +58,8 @@ namespace Precisamento.MonoGame.Scenes
         public void Update(float delta)
         {
             _update.Update(delta);
+
+            Recorder.Execute();
         }
 
         public void Draw(SpriteBatchState state)
@@ -67,11 +81,25 @@ namespace Precisamento.MonoGame.Scenes
             state.End();
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _update.Dispose();
+                    _draw.Dispose();
+                    _gui.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }
+
         public void Dispose()
         {
-            _update.Dispose();
-            _draw.Dispose();
-            _gui.Dispose();
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

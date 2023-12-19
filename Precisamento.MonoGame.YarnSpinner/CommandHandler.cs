@@ -1,4 +1,4 @@
-﻿using Soren.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -224,7 +224,7 @@ namespace Precisamento.MonoGame.YarnSpinner
                 };
             }
 
-            if(typeof(LogAdapter).IsAssignableFrom(targetType))
+            if(typeof(ILogger).IsAssignableFrom(targetType))
             {
                 return (_, dr) => dr.Logger;
             }

@@ -90,17 +90,17 @@ namespace Precisamento.MonoGame.Collisions
 
                     return Position == point.Position;
                 case ColliderType.Line:
-                    return Collisions.PointToLine(this, (LineCollider)other);
+                    return CollisionChecks.PointToLine(this, (LineCollider)other);
                 case ColliderType.Circle:
-                    return Collisions.PointToCircle(Position, (CircleCollider)other);
+                    return CollisionChecks.PointToCircle(Position, (CircleCollider)other);
                 case ColliderType.Box:
                     var box = (BoxCollider)other;
                     if (box.IsUnrotated)
                         return box.BoundingBox.Contains(Position);
                     else
-                        return Collisions.PointToPoly(Position, box);
+                        return CollisionChecks.PointToPoly(Position, box);
                 case ColliderType.Polygon:
-                    return Collisions.PointToPoly(Position, (PolygonCollider)other);
+                    return CollisionChecks.PointToPoly(Position, (PolygonCollider)other);
             }
 
             throw new NotImplementedException($"Overlaps of Point to {other.GetType()} are not supported.");
@@ -119,19 +119,19 @@ namespace Precisamento.MonoGame.Collisions
                     if (point.InternalCollider != point)
                         return point.InternalCollider.CollidesWithPoint(Position, out collision);
 
-                    return Collisions.PointToPoint(this, point, out collision);
+                    return CollisionChecks.PointToPoint(this, point, out collision);
                 case ColliderType.Line:
-                    return Collisions.PointToLine(this, (LineCollider)other, out collision);
+                    return CollisionChecks.PointToLine(this, (LineCollider)other, out collision);
                 case ColliderType.Circle:
-                    return Collisions.PointToCircle(Position, (CircleCollider)other, out collision);
+                    return CollisionChecks.PointToCircle(Position, (CircleCollider)other, out collision);
                 case ColliderType.Box:
                     var box = (BoxCollider)other;
                     if (box.IsUnrotated)
-                        return Collisions.PointToBox(Position, box, out collision);
+                        return CollisionChecks.PointToBox(Position, box, out collision);
                     else
-                        return Collisions.PointToPoly(Position, box, out collision);
+                        return CollisionChecks.PointToPoly(Position, box, out collision);
                 case ColliderType.Polygon:
-                    return Collisions.PointToPoly(Position, (PolygonCollider)other, out collision);
+                    return CollisionChecks.PointToPoly(Position, (PolygonCollider)other, out collision);
             }
 
             throw new NotImplementedException($"Collisions of Point to {other.GetType()} are not supported.");
@@ -150,7 +150,7 @@ namespace Precisamento.MonoGame.Collisions
             if (InternalCollider != this)
                 return InternalCollider.CollidesWithRect(rect, out result);
             else
-                return Collisions.PointToBox(Position, rect, out result);
+                return CollisionChecks.PointToBox(Position, rect, out result);
         }
 
         public override bool CollidesWithLine(Vector2 start, Vector2 end)
@@ -158,7 +158,7 @@ namespace Precisamento.MonoGame.Collisions
             if (InternalCollider != this)
                 return InternalCollider.CollidesWithLine(start, end);
             else
-                return Collisions.PointToLine(Position, start, end);
+                return CollisionChecks.PointToLine(Position, start, end);
         }
 
         public override bool CollidesWithLine(Vector2 start, Vector2 end, out RaycastHit hit)
@@ -170,7 +170,7 @@ namespace Precisamento.MonoGame.Collisions
             else
             {
                 hit = default;
-                return Collisions.PointToLine(Position, start, end);
+                return CollisionChecks.PointToLine(Position, start, end);
             }
         }
 
@@ -187,7 +187,7 @@ namespace Precisamento.MonoGame.Collisions
             if (InternalCollider != this)
                 return InternalCollider.CollidesWithPoint(point, out result);
             else
-                return Collisions.PointToPoint(this, point, out result);
+                return CollisionChecks.PointToPoint(this, point, out result);
         }
 
         public override void DebugDraw(SpriteBatch spriteBatch, Color color)

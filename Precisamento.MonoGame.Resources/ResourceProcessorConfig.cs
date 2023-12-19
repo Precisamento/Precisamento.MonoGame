@@ -76,7 +76,11 @@ namespace Precisamento.MonoGame.Resources
                 bool hasFiles = false;
                 bool hasDirectories = false;
 
-                while (reader.Read())
+                if (reader.TokenType != JsonTokenType.StartObject)
+                    throw new JsonException();
+                reader.Read();
+
+                while (reader.TokenType != JsonTokenType.EndObject)
                 {
                     switch(reader.GetString())
                     {
@@ -103,6 +107,8 @@ namespace Precisamento.MonoGame.Resources
                         case "files":
                             if(hasFiles)
                                 throw new JsonException();
+
+                            reader.Read();
 
                             ReadResourceList(ref reader, config.Files);
                             break;

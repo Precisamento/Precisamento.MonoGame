@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Precisamento.MonoGame.Collisions
 {
-    public static partial class Collisions
+    public static partial class CollisionChecks
     {
         public static bool LineToPoly(LineCollider line, PolygonCollider polygon)
             => LineToPoly(line.Start, line.End, polygon);
@@ -15,8 +15,8 @@ namespace Precisamento.MonoGame.Collisions
         {
             for (int j = polygon.Points.Length - 1, i = 0; i < polygon.Points.Length; j = i, i++)
             {
-                var edge1 = polygon.Position + polygon.Points[j];
-                var edge2 = polygon.Position + polygon.Points[i];
+                var edge1 = polygon.Position - polygon.Center + polygon.Points[j];
+                var edge2 = polygon.Position - polygon.Center + polygon.Points[i];
                 if (LineToLine(edge1, edge2, start, end))
                 {
                     return true;
@@ -39,8 +39,8 @@ namespace Precisamento.MonoGame.Collisions
 
             for (int j = polygon.Points.Length - 1, i = 0; i < polygon.Points.Length; j = i, i++)
             {
-                var edge1 = polygon.Position + polygon.Points[j];
-                var edge2 = polygon.Position + polygon.Points[i];
+                var edge1 = polygon.Position - polygon.Center + polygon.Points[j];
+                var edge2 = polygon.Position - polygon.Center + polygon.Points[i];
                 if (LineToLine(edge1, edge2, start, end, out Vector2 intersection))
                 {
                     hasIntersection = true;

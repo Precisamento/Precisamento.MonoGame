@@ -1,0 +1,8 @@
+﻿title: Options
+---
+[trans wait=false /]Are you a boy or girl? #line:0472329 
+-> Boy #line:0e2e2f4 
+    I knew you were cool. #boy #other #line:00214ce 
+-> Girl #line:0ff1e0f 
+    I knew you were cute. #girl #line:073a103 
+===

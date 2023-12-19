@@ -2,17 +2,19 @@
 using DefaultEcs.System;
 using DefaultEcs.Threading;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.TextureAtlases;
 using Precisamento.MonoGame.Components;
 using Precisamento.MonoGame.Graphics;
+using Precisamento.MonoGame.MathHelpers;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Precisamento.MonoGame.Systems.Graphics
 {
-    [With(typeof(SpriteAnimationPlayer))]
+    [WithEither(typeof(SpriteAnimationPlayer), typeof(SpriteAnimation), typeof(TextureRegion2D), typeof(Texture2D))]
     [WithEither(typeof(Transform2), typeof(NinePatchComponent))]
     public abstract class GeneralAnimationDrawSystem : AEntitySetSystem<SpriteBatchState>
     {
@@ -58,34 +60,221 @@ namespace Precisamento.MonoGame.Systems.Graphics
 
         protected override sealed void Update(SpriteBatchState state, in Entity entity)
         {
-            ref var animationPlayer = ref entity.Get<SpriteAnimationPlayer>();
-
-            if(entity.Has<Transform2>())
+            if(entity.Has<SpriteAnimationPlayer>())
             {
-                ref var transform = ref entity.Get<Transform2>();
-
-                if (entity.Has<SpriteDrawParams>())
+                ref var animationPlayer = ref entity.Get<SpriteAnimationPlayer>();
+                if (entity.Has<Transform2>())
                 {
-                    ref var drawParams = ref entity.Get<SpriteDrawParams>();
-                    animationPlayer.Draw(state, transform, ref drawParams);
+                    ref var transform = ref entity.Get<Transform2>();
+
+                    if (entity.Has<SpriteDrawParams>())
+                    {
+                        ref var drawParams = ref entity.Get<SpriteDrawParams>();
+                        animationPlayer.Draw(state, transform, ref drawParams);
+                    }
+                    else
+                    {
+                        animationPlayer.Draw(state, transform);
+                    }
                 }
                 else
                 {
-                    animationPlayer.Draw(state, transform);
+                    var bounds = entity.Get<NinePatchComponent>().Bounds;
+
+                    if (entity.Has<SpriteDrawParams>())
+                    {
+                        ref var drawParams = ref entity.Get<SpriteDrawParams>();
+                        animationPlayer.Draw(state, bounds, ref drawParams);
+                    }
+                    else
+                    {
+                        animationPlayer.Draw(state, bounds);
+                    }
                 }
             }
-            else
+            else if(entity.Has<SpriteAnimation>())
             {
-                var bounds = entity.Get<NinePatchComponent>().Bounds;
+                ref var animation = ref entity.Get<SpriteAnimation>();
 
-                if (entity.Has<SpriteDrawParams>())
+                if (entity.Has<Transform2>())
                 {
-                    ref var drawParams = ref entity.Get<SpriteDrawParams>();
-                    animationPlayer.Draw(state, bounds, ref drawParams);
+                    ref var transform = ref entity.Get<Transform2>();
+
+                    if (entity.Has<SpriteDrawParams>())
+                    {
+                        ref var drawParams = ref entity.Get<SpriteDrawParams>();
+                        if (drawParams.Invisible)
+                            return;
+
+                        state.SpriteBatch.Draw(
+                            animation.Frames[animation.StartFrameIndex],
+                            Vector2Ext.Round(transform.Position),
+                            drawParams.Color,
+                            transform.Rotation,
+                            animation.Origin,
+                            transform.Scale,
+                            drawParams.Effects,
+                            drawParams.Depth);
+                    }
+                    else
+                    {
+                        state.SpriteBatch.Draw(
+                            animation.Frames[animation.StartFrameIndex],
+                            Vector2Ext.Round(transform.Position),
+                            Color.White,
+                            transform.Rotation,
+                            animation.Origin,
+                            transform.Scale,
+                            SpriteEffects.None,
+                            0f);
+                    }
                 }
                 else
                 {
-                    animationPlayer.Draw(state, bounds);
+                    var bounds = entity.Get<NinePatchComponent>().Bounds;
+
+                    if (entity.Has<SpriteDrawParams>())
+                    {
+                        ref var drawParams = ref entity.Get<SpriteDrawParams>();
+                        if (drawParams.Invisible)
+                            return;
+
+                        state.SpriteBatch.Draw(
+                            animation.Frames[animation.StartFrameIndex],
+                            bounds,
+                            drawParams.Color);
+                    }
+                    else
+                    {
+                        state.SpriteBatch.Draw(
+                            animation.Frames[animation.StartFrameIndex],
+                            bounds,
+                            Color.White);
+                    }
+                }
+            }
+            else if(entity.Has<TextureRegion2D>())
+            {
+                ref var texture = ref entity.Get<TextureRegion2D>();
+
+                if (entity.Has<Transform2>())
+                {
+                    ref var transform = ref entity.Get<Transform2>();
+
+                    if (entity.Has<SpriteDrawParams>())
+                    {
+                        ref var drawParams = ref entity.Get<SpriteDrawParams>();
+                        if (drawParams.Invisible)
+                            return;
+
+                        state.SpriteBatch.Draw(
+                            texture,
+                            Vector2Ext.Round(transform.Position),
+                            drawParams.Color,
+                            transform.Rotation,
+                            Vector2.Zero,
+                            transform.Scale,
+                            drawParams.Effects,
+                            drawParams.Depth);
+                    }
+                    else
+                    {
+                        state.SpriteBatch.Draw(
+                            texture,
+                            Vector2Ext.Round(transform.Position),
+                            Color.White,
+                            transform.Rotation,
+                            Vector2.Zero,
+                            transform.Scale,
+                            SpriteEffects.None,
+                            0f);
+                    }
+                }
+                else
+                {
+                    var bounds = entity.Get<NinePatchComponent>().Bounds;
+
+                    if (entity.Has<SpriteDrawParams>())
+                    {
+                        ref var drawParams = ref entity.Get<SpriteDrawParams>();
+                        if (drawParams.Invisible)
+                            return;
+
+                        state.SpriteBatch.Draw(
+                            texture,
+                            bounds,
+                            drawParams.Color);
+                    }
+                    else
+                    {
+                        state.SpriteBatch.Draw(
+                            texture,
+                            bounds,
+                            Color.White);
+                    }
+                }
+            }
+            else if(entity.Has<Texture2D>())
+            {
+                ref var texture = ref entity.Get<Texture2D>();
+
+                if (entity.Has<Transform2>())
+                {
+                    ref var transform = ref entity.Get<Transform2>();
+
+                    if (entity.Has<SpriteDrawParams>())
+                    {
+                        ref var drawParams = ref entity.Get<SpriteDrawParams>();
+                        if (drawParams.Invisible)
+                            return;
+
+                        state.SpriteBatch.Draw(
+                            texture,
+                            Vector2Ext.Round(transform.Position),
+                            null,
+                            drawParams.Color,
+                            transform.Rotation,
+                            Vector2.Zero,
+                            transform.Scale,
+                            drawParams.Effects,
+                            drawParams.Depth);
+                    }
+                    else
+                    {
+                        state.SpriteBatch.Draw(
+                            texture,
+                            Vector2Ext.Round(transform.Position),
+                            null,
+                            Color.White,
+                            transform.Rotation,
+                            Vector2.Zero,
+                            transform.Scale,
+                            SpriteEffects.None,
+                            0f);
+                    }
+                }
+                else
+                {
+                    var bounds = entity.Get<NinePatchComponent>().Bounds;
+
+                    if (entity.Has<SpriteDrawParams>())
+                    {
+                        ref var drawParams = ref entity.Get<SpriteDrawParams>();
+                        if (drawParams.Invisible)
+                            return;
+
+                        state.SpriteBatch.Draw(
+                            texture,
+                            bounds,
+                            drawParams.Color);
+                    }
+                    else
+                    {
+                        state.SpriteBatch.Draw(
+                            texture,
+                            bounds,
+                            Color.White);
+                    }
                 }
             }
         }
@@ -108,12 +297,12 @@ namespace Precisamento.MonoGame.Systems.Graphics
     [With(typeof(GuiComponent))]
     public class GuiAnimationDrawSystem : GeneralAnimationDrawSystem
     {
-        protected GuiAnimationDrawSystem(World world)
+        public GuiAnimationDrawSystem(World world)
             : base(world)
         {
         }
 
-        protected GuiAnimationDrawSystem(World world, bool useBuffer)
+        public GuiAnimationDrawSystem(World world, bool useBuffer)
             : base(world, useBuffer)
         {
         }

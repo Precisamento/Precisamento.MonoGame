@@ -1,0 +1,12 @@
+# Precisamento.MonoGame
+
+This is an opinionated library of utilities to aid in the development of MonoGame projects. It's currently mostly for internal use and in development, so it's not very well documented, but it will be expanding.
+
+## Features
+
+* Collisions
+* Input Management
+* Sprites
+* Dialogue Engine (using YarnSpinner)
+* ECS extensions (using DefaultECS)
+* Improved Resource Management

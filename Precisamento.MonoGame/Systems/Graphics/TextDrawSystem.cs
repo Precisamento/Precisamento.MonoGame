@@ -51,7 +51,7 @@ namespace Precisamento.MonoGame.Systems.Graphics
                 text.Font.Draw(
                     state.SpriteBatch,
                     text.Text,
-                    transform.Position,
+                    transform.Position + drawParams.Offset,
                     text.TextColor,
                     transform.Rotation,
                     drawParams.Origin,

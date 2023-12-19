@@ -142,7 +142,11 @@ namespace Precisamento.MonoGame.Resources
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
+            ProcessingFile?.Invoke(this, new ResourceProcessFileEventArgs(inputFile, converter));
+
             PerformConversion(inputFile, outputFile, converter);
+
+            ProcessedFile?.Invoke(this, new ResourceProcessFileCompleteEventArgs(inputFile, outputFile, converter));
         }
 
         private ResourceConverter? GetConverterForFile(string file)

@@ -12,47 +12,95 @@ namespace Precisamento.MonoGame.MathHelpers
         public const float Deg2Rad = 0.0174532924f;
         public const float Rad2Deg = 57.29578f;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 LengthDir(float length, float direction)
         {
             return new Vector2(
-                length * MathF.Cos(MathHelper.ToRadians(direction)), 
-                -length * MathF.Sin(MathHelper.ToRadians(direction)));
+                length * MathF.Cos(direction), 
+                -length * MathF.Sin(direction));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float LengthDirX(float length, float direction)
         {
-            return length * MathF.Cos(MathHelper.ToRadians(direction));
+            return length * MathF.Cos(direction);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float LengthDirY(float length, float direction)
         {
-            return -length * MathF.Sin(MathHelper.ToRadians(direction));
+            return -length * MathF.Sin(direction);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float DistanceSquared(Vector2 p1, Vector2 p2)
         {
             return ((p2.X - p1.X) * (p2.X - p1.X)) + ((p2.Y - p1.Y) * (p2.Y - p1.Y));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float DistanceSquared(float x1, float y1, float x2, float y2)
         {
             return ((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1));
         }
 
-        public static float Direction(float x1, float y1, float x2, float y2)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Direction(Vector2 position)
         {
-            var dir = MathHelper.ToDegrees(MathF.Atan2(y1 - y2, x2 - x1));
-            if (dir < 0f)
-                dir = 360f + dir;
-            return dir;
+            return MathF.Atan2(-position.Y, position.X);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Direction(float x1, float y1, float x2, float y2)
+        {
+            return MathF.Atan2(y1 - y2, x2 - x1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Direction(Vector2 p1, Vector2 p2)
         {
-            var dir = MathHelper.ToDegrees(MathF.Atan2(p1.Y - p2.Y, p2.X - p1.X));
-            if (dir < 0f)
-                dir = 360f + dir;
-            return dir;
+            return MathF.Atan2(p1.Y - p2.Y, p2.X - p1.X);
+        }
+
+        public static float ToDegreesClamped(float radians)
+        {
+            var degrees = MathHelper.ToDegrees(radians);
+            while (degrees < 0)
+                degrees += 360;
+
+            while (degrees >= 360)
+                degrees -= 360;
+
+            return degrees;
+        }
+
+        public static Directions DirectionFromRadians(float radians)
+        {
+            var degrees = ToDegreesClamped(radians);
+            return DirectionFromDegrees(degrees);
+        }
+
+        public static Directions DirectionFromDegrees(float degrees)
+        {
+            while (degrees < 0)
+                degrees += 360;
+
+            while (degrees >= 360)
+                degrees -= 360;
+
+            var angle = (int)Round(degrees, 45);
+            switch (angle)
+            {
+                case 0: return Directions.East;
+                case 45: return Directions.NorthEast;
+                case 90: return Directions.North;
+                case 135: return Directions.NorthWest;
+                case 180: return Directions.West;
+                case 225: return Directions.SouthWest;
+                case 270: return Directions.South;
+                case 315: return Directions.SouthEast;
+                default: return Directions.None;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

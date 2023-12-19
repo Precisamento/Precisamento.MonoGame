@@ -1,4 +1,6 @@
 ﻿using DefaultEcs;
+using MonoGame.Extended;
+using Precisamento.MonoGame.Components;
 using System;
 using System.Collections.Generic;
 using System.Text;

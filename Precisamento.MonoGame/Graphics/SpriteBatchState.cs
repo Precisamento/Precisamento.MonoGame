@@ -114,15 +114,25 @@ namespace Precisamento.MonoGame.Graphics
             if (Drawing)
                 End();
 
-            if (renderTarget == null && _savedTransform != null)
+            if (renderTarget == null)
             {
-                _transformMatrix = _savedTransform;
-                GraphicsDevice.Viewport = _savedViewport.Value;
-                _savedViewport = null;
-                _savedTransform = null;
+                if (_savedTransform != null)
+                {
+                    _transformMatrix = _savedTransform;
+                    GraphicsDevice.Viewport = _savedViewport.Value;
+                    _savedViewport = null;
+                    _savedTransform = null;
+                }
             }
             else
             {
+                if(_savedTransform != null)
+                {
+                    _transformMatrix = _savedTransform;
+                    GraphicsDevice.Viewport = _savedViewport.Value;
+                    _savedViewport = null;
+                    _savedTransform = null;
+                }
                 _savedViewport = GraphicsDevice.Viewport;
                 _savedTransform = _transformMatrix;
                 _transformMatrix = null;

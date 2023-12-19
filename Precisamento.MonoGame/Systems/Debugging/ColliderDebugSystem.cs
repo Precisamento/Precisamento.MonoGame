@@ -29,6 +29,7 @@ namespace Precisamento.MonoGame.Systems.Debugging
                 color = entity.Get<DebugColor>().Color;
 
             collider.DebugDraw(state.SpriteBatch, color);
+            state.SpriteBatch.DrawCircle(collider.Position, 4, 16, color);
         }
     }
 }

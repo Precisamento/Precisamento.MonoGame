@@ -82,5 +82,23 @@ namespace Precisamento.MonoGame.Collisions
             collider.Scale = scale;
             Add(collider);
         }
+
+        public virtual void MoveTransform(Collider collider, Transform2 transform)
+        {
+            Remove(collider);
+            collider.Position += transform.Position;
+            collider.Rotation += transform.Rotation;
+            collider.Scale += transform.Scale.X;
+            Add(collider);
+        }
+
+        public virtual void SetTransform(Collider collider, Transform2 transform)
+        {
+            Remove(collider);
+            collider.Position = transform.Position;
+            collider.Rotation = transform.Rotation;
+            collider.Scale = transform.Scale.X;
+            Add(collider);
+        }
     }
 }

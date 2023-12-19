@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Precisamento.MonoGame.Collisions
 {
-    public static partial class Collisions
+    public static partial class CollisionChecks
     {
         public static bool BoxToBox(BoxCollider first, BoxCollider second, out CollisionResult result)
             => BoxToBox(first.BoundingBox, second.BoundingBox, out result);

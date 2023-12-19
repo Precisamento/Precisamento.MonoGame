@@ -40,7 +40,7 @@ namespace Precisamento.MonoGame.Collisions
             {
                 if (_dirty)
                     Clean();
-                return new RectangleF(_boundingBox.Position + Position, _boundingBox.Size);
+                return new RectangleF(_boundingBox.Position + Position - Center, _boundingBox.Size);
             }
         }
 
@@ -176,6 +176,9 @@ namespace Precisamento.MonoGame.Collisions
             {
                 var cos = MathF.Cos(_rotation);
                 var sin = MathF.Sin(_rotation);
+
+                _center = _originalCenter;
+
                 for (var i = 0; i < _points.Length; i++)
                 {
                     var p = _originalPoints[i] - _center;
@@ -236,10 +239,10 @@ namespace Precisamento.MonoGame.Collisions
 
         public override void DebugDraw(SpriteBatch spriteBatch, Color color)
         {
-            Primitives2D.DrawLine(spriteBatch, Points[_points.Length - 1] + Position, _points[0] + Position, color);
+            Primitives2D.DrawLine(spriteBatch, Points[_points.Length - 1] + Position - Center, _points[0] + Position - Center, color);
 
             for (var i = 1; i < _points.Length; i++)
-                Primitives2D.DrawLine(spriteBatch, _points[i - 1] + Position, _points[i] + Position, color);
+                Primitives2D.DrawLine(spriteBatch, _points[i - 1] + Position - Center, _points[i] + Position - Center, color);
         }
 
         public static Vector2[] BuildBox(float width, float height)
@@ -296,7 +299,7 @@ namespace Precisamento.MonoGame.Collisions
                 if (j == points.Length)
                     j = 0;
 
-                var closest = Collisions.ClosestPointOnLine(points[i], points[j], point);
+                var closest = CollisionChecks.ClosestPointOnLine(points[i], points[j], point);
                 Vector2.DistanceSquared(ref point, ref closest, out float tempDistanceSquared);
 
                 if (tempDistanceSquared < distanceSquared)
@@ -321,7 +324,7 @@ namespace Precisamento.MonoGame.Collisions
                 if (j == points.Length)
                     j = 0;
 
-                var closest = Collisions.ClosestPointOnLine(points[i], points[j], point);
+                var closest = CollisionChecks.ClosestPointOnLine(points[i], points[j], point);
                 Vector2.DistanceSquared(ref point, ref closest, out float tempDistanceSquared);
 
                 if (tempDistanceSquared < distanceSquared)
@@ -445,12 +448,12 @@ namespace Precisamento.MonoGame.Collisions
                         return Overlaps(point.InternalCollider);
                     return ContainsPoint(point.Position);
                 case ColliderType.Line:
-                    return Collisions.LineToPoly((LineCollider)other, this);
+                    return CollisionChecks.LineToPoly((LineCollider)other, this);
                 case ColliderType.Circle:
-                    return Collisions.CircleToPolygon((CircleCollider)other, this);
+                    return CollisionChecks.CircleToPolygon((CircleCollider)other, this);
                 case ColliderType.Box:
                 case ColliderType.Polygon:
-                    return Collisions.PolygonToPolygon(this, (PolygonCollider)other);
+                    return CollisionChecks.PolygonToPolygon(this, (PolygonCollider)other);
             }
 
             throw new NotImplementedException($"Overlaps of Polygon to {other.GetType()} are not supported.");
@@ -465,15 +468,15 @@ namespace Precisamento.MonoGame.Collisions
                     var point = (PointCollider)other;
                     if (point.InternalCollider != point)
                         return CollidesWithShape(point.InternalCollider, out collision, out ray);
-                    return Collisions.PointToPoly(point.Position, this, out collision);
+                    return CollisionChecks.PointToPoly(point.Position, this, out collision);
                 case ColliderType.Line:
                     collision = default;
-                    return Collisions.LineToPoly((LineCollider)other, this, out ray);
+                    return CollisionChecks.LineToPoly((LineCollider)other, this, out ray);
                 case ColliderType.Circle:
-                    return Collisions.CircleToPolygon((CircleCollider)other, this, out collision);
+                    return CollisionChecks.CircleToPolygon((CircleCollider)other, this, out collision);
                 case ColliderType.Box:
                 case ColliderType.Polygon:
-                    return Collisions.PolygonToPolygon(this, (PolygonCollider)other, out collision);
+                    return CollisionChecks.PolygonToPolygon(this, (PolygonCollider)other, out collision);
             }
 
             throw new NotImplementedException($"Collisions of Polygon to {other.GetType()} are not supported.");
@@ -481,22 +484,22 @@ namespace Precisamento.MonoGame.Collisions
 
         public override bool CollidesWithLine(Vector2 start, Vector2 end)
         {
-            return Collisions.LineToPoly(start, end, this);
+            return CollisionChecks.LineToPoly(start, end, this);
         }
 
         public override bool CollidesWithLine(Vector2 start, Vector2 end, out RaycastHit hit)
         {
-            return Collisions.LineToPoly(start, end, this, out hit);
+            return CollisionChecks.LineToPoly(start, end, this, out hit);
         }
 
         public override bool ContainsPoint(Vector2 point)
         {
-            return Collisions.PointToPoly(point, this);
+            return CollisionChecks.PointToPoly(point, this);
         }
 
         public override bool CollidesWithPoint(Vector2 point, out CollisionResult result)
         {
-            return Collisions.PointToPoly(point, this, out result);
+            return CollisionChecks.PointToPoly(point, this, out result);
         }
     }
 }

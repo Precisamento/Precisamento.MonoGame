@@ -1,0 +1,5 @@
+﻿title: LongText
+---
+[just hor=center /]Hello world. [color=blue]This is [font="Content/Fonts/Test"]going to[/font] be a really [/color]long [just hor=left /]line of text that must keep going in order to wrap onto the next line. So let's see how long it goes. This seems like it's good enough. Need it to wrap through to one more line. #line:0485ab6 
+This is another line #line:034b587 #test
+===
