@@ -14,7 +14,7 @@ namespace Precisamento.MonoGame.Timers
         {
         }
 
-        public event EventHandler Completed;
+        public event EventHandler? Completed;
 
         protected override void OnUpdate(float deltaTime)
         {

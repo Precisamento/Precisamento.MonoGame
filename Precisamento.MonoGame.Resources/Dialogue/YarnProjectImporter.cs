@@ -22,6 +22,8 @@ namespace Precisamento.MonoGame.Resources.Dialogue
             var basePath = Path.GetDirectoryName(fileName)!;
             var job = CompilationJob.CreateFromFiles(project.SourceFiles);
 
+            AdditionalFiles.AddRange(project.SourceFiles);
+
             // Todo: Determine if this actually affects the result of the
             //       compilation at all.
             if (!string.IsNullOrWhiteSpace(project.DefinitionsPath))
@@ -51,6 +53,13 @@ namespace Precisamento.MonoGame.Resources.Dialogue
             localization.Locales[baseLocale.Locale] = baseLocale;
 
             return new YarnDescription(result, localization);
+        }
+
+        public override bool NeedsToReload(string input, string output, ResourceBuildCache cache)
+        {
+            var project = Project.LoadFromFile(input);
+
+
         }
     }
 }

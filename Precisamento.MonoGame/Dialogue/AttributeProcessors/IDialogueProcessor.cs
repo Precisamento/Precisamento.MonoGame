@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Yarn.Markup;
 
-namespace Precisamento.MonoGame.Dialogue
+namespace Precisamento.MonoGame.Dialogue.AttributeProcessors
 {
     public interface IDialogueProcessor
     {

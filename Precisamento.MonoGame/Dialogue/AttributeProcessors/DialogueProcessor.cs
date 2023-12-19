@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Precisamento.MonoGame.Dialogue.AttributeProcessors;
 using System;
 using System.Collections.Generic;
 using System.Linq;

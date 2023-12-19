@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Precisamento.MonoGame.Dialogue.AttributeProcessors;
 using Precisamento.MonoGame.YarnSpinner.Utils;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,7 @@ namespace Precisamento.MonoGame.Dialogue
             = new(new StringEqualityComparer());
 
         private Game _game;
+        private DialogueNopProcessor _nop = new DialogueNopProcessor();
 
         public DialogueProcessorFactory(Game game)
         {
@@ -65,6 +67,11 @@ namespace Precisamento.MonoGame.Dialogue
         {
             if(!_processorPools.TryGetValue(attribute.Name, out var processorPool))
             {
+                // No need to require a character attribute processor since it's built-in with
+                // no well-defined behavior.
+                if (attribute.Name == "character")
+                    return _nop;
+
                 throw new InvalidOperationException(
                     $"Failed to get an attribute processor for the attribute {attribute.Name}");
             }

@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.TextureAtlases;
+using Precisamento.MonoGame.Dialogue.Options;
 using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.Input;
 using Precisamento.MonoGame.MathHelpers;
@@ -340,12 +341,7 @@ namespace Precisamento.MonoGame.Dialogue
             foreach (var option in options)
             {
                 var frame = CreateFrame(option.Line, _state, true);
-                var optionDisplay = new DialogueOptionDisplay()
-                {
-                    Line = frame,
-                    DialogueOptionId = option.DialogueOptionId,
-                    IsAvailable = option.IsAvailable
-                };
+                var optionDisplay = new DialogueOptionDisplay(frame, option.DialogueOptionId, option.IsAvailable);
 
                 _options.Add(optionDisplay);
             }

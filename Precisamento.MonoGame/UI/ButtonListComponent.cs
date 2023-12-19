@@ -10,16 +10,16 @@ namespace Precisamento.MonoGame.UI
 {
     public class ButtonListComponent
     {
-        public const float INITIAL_WAIT = 500;
-        public const float HOLD_WAIT = 1000f / 6;
+        public const float INITIAL_WAIT = 0.5f;
+        public const float HOLD_WAIT = 1f / 6;
 
         public List<Entity> Buttons { get; set; }
         public int UpAction { get; set; } = -1;
         public int DownAction { get; set; } = -1;
         public int ClickAction { get; set; } = -1;
 
-        public float InitialWait = INITIAL_WAIT;
-        public float HoldWait = HOLD_WAIT;
+        public float InitialWait { get; set; } = INITIAL_WAIT;
+        public float HoldWait { get; set; } = HOLD_WAIT;
         public int SelectedIndex { get; set; } = -1;
         public int Direction { get; set; }
         public ContinuousTimer HoldTimer { get; } = new ContinuousTimer(0f);

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using MonoGame.Extended.TextureAtlases;
+using Precisamento.MonoGame.Dialogue.Options;
 using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.YarnSpinner;
 using System;

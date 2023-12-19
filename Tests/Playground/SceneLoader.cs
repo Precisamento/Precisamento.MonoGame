@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using Precisamento.MonoGame.Dialogue;
+using Precisamento.MonoGame.Dialogue.Options;
 using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.Input;
 using Precisamento.MonoGame.Resources;

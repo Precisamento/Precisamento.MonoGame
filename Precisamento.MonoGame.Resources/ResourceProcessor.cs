@@ -99,11 +99,13 @@ namespace Precisamento.MonoGame.Resources
 
         private bool FileIsCached(ResourceBuildCache.CachedFile cachedFile, string input, string output, ResourceConverter converter)
         {
-            return cachedFile.Input == input
+            var isCached = cachedFile.Input == input
                 && cachedFile.Output == output
                 && cachedFile.ConverterName == converter.GetType().FullName
                 && File.Exists(output)
                 && File.GetLastWriteTimeUtc(input) == cachedFile.LastEdited;
+
+            return isCached && !converter.Importer.NeedsToReload(input, output, _buildCache);
         }
 
         public void ProcessFile(string inputFile)

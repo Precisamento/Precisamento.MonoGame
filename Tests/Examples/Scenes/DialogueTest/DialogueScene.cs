@@ -6,6 +6,7 @@ using MonoGame.Extended;
 using Precisamento.MonoGame.Collisions;
 using Precisamento.MonoGame.Components;
 using Precisamento.MonoGame.Dialogue;
+using Precisamento.MonoGame.Dialogue.Options;
 using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.Input;
 using Precisamento.MonoGame.MathHelpers;

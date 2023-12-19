@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Precisamento.MonoGame.Dialogue
+namespace Precisamento.MonoGame.Dialogue.Options
 {
     public enum DialogueOptionRenderLocation
     {

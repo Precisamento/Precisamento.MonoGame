@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MonoGame.Extended;
+using Precisamento.MonoGame.Dialogue.AttributeProcessors;
 
 namespace Precisamento.MonoGame.Dialogue
 {

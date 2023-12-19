@@ -108,6 +108,12 @@ namespace Precisamento.MonoGame.Systems.UI
 
             list.HoldTimer.Update(deltaTime);
 
+            if (list.HoldTimer.Ticked)
+            {
+                list.HoldTimer.Interval = list.HoldWait;
+                ChangeSelected(ref list);
+            }
+
             if (list.SelectedIndex != -1 && list.ClickAction != -1)
             {
                 if (_actions.ActionCheckPressed(list.ClickAction))
