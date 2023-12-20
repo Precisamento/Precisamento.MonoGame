@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MonoGame.Extended;
 using Precisamento.MonoGame.Dialogue.AttributeProcessors;
+using Precisamento.MonoGame.Dialogue.Characters;
 
 namespace Precisamento.MonoGame.Dialogue
 {
@@ -30,32 +31,40 @@ namespace Precisamento.MonoGame.Dialogue
         public DialogueFrame(
             LocalizedLine line,
             DialogueProcessorFactory processorFactory,
+            ICharacterProcessorFactory characterFactory,
             DialogueState state,
             ISentenceSplitter sentenceSplitter,
             int lineStart)
         {
-            Init(line, processorFactory, state, sentenceSplitter, lineStart);
+            Init(line, processorFactory, characterFactory, state, sentenceSplitter, lineStart);
         }
 
         public void Init(
             LocalizedLine line,
             DialogueProcessorFactory processorFactory,
+            ICharacterProcessorFactory characterFactory,
             DialogueState state,
             ISentenceSplitter sentenceSplitter,
             int lineStart)
         {
             Metadata = line.Metadata;
-            GenerateLines(line, processorFactory, state, sentenceSplitter);
+            GenerateLines(line, processorFactory, characterFactory, state, sentenceSplitter);
             LineStart = lineStart;
         }
 
         private void GenerateLines(
             LocalizedLine line,
             DialogueProcessorFactory processorFactory,
+            ICharacterProcessorFactory characterFactory,
             DialogueState state,
             ISentenceSplitter sentenceSplitter)
         {
-            var text = line.Text.Text;
+            var characterProcessors = characterFactory.CreateProcessorsForCharacter(line, out var markup);
+
+            foreach (var processor in characterProcessors)
+                Processors.Add(processor);
+
+            var text = markup.Text;
             IDialogueCustomDraw? customProcessor = null;
             var currentLine = new StringBuilder();
             var letterBuffer = new StringBuilder(1);

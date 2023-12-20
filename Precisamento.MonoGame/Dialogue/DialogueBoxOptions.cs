@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using MonoGame.Extended.TextureAtlases;
+using Precisamento.MonoGame.Dialogue.Characters;
 using Precisamento.MonoGame.Dialogue.Options;
 using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.YarnSpinner;
@@ -23,6 +24,7 @@ namespace Precisamento.MonoGame.Dialogue
         public IFont Font { get; set; }
         public Color TextColor { get; set; }
         public ISentenceSplitter SentenceSplitter { get; set; }
+
         public DialogueOptionRenderLocation OptionRenderLocation { get; set; }
         public Size OptionBoxMaxBounds { get; set; }
         public Size OptionBoxMinBounds { get; set; }
@@ -47,6 +49,10 @@ namespace Precisamento.MonoGame.Dialogue
         public bool OptionScrollKeepSelectionCentered { get; set; }
         public bool OptionAllowMouseSelect { get; set; }
         public bool IsOptionWindow { get; set; }
+
+        public Dictionary<string, CharacterProfile>? Characters { get; set; }
+        public PortraitBounds? DefaultCharacterPortraitBounds { get; set; }
+        public CharacterLocation? DefaultCharacterLocation { get; set; }
 
         public object Clone()
         {
@@ -86,6 +92,7 @@ namespace Precisamento.MonoGame.Dialogue
             other.OptionScrollKeepSelectionCentered = OptionScrollKeepSelectionCentered;
             other.OptionAllowMouseSelect = OptionAllowMouseSelect;
             other.IsOptionWindow = IsOptionWindow;
+            other.Characters = Characters;
 
             return other;
         }

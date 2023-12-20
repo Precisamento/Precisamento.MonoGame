@@ -16,9 +16,36 @@ namespace Precisamento.MonoGame.Dialogue
         private DialogueJustification _vertical;
         private DialogueJustification _horizontal;
         private DialogueJustification _inner;
-        private DialogueJustification _originalVertical;
-        private DialogueJustification _originalHorizontal;
-        private DialogueJustification _originalInner;
+
+        public DialogueJustificationProcessor()
+        { }
+
+        public DialogueJustificationProcessor(DialogueJustification? vertical, DialogueJustification? horizontal, DialogueJustification? inner)
+        {
+            if (vertical is DialogueJustification v) 
+            {
+                _hasVertical = true;
+                _vertical = v;
+            }
+
+            if (horizontal is DialogueJustification h)
+            {
+                _hasHorizontal = true;
+                _horizontal = h;
+            }
+
+            if (inner is DialogueJustification i)
+            {
+                _hasInner = true;
+                _inner = i;
+            }
+
+            if (!_hasVertical && !_hasHorizontal && !_hasInner)
+            {
+                throw new ArgumentException(
+                    $"Invalid [justification] attribute. Must contain at least one of 'vertical', 'horizontal', or 'inner'");
+            }
+        }
 
         public override void Init(Game game, MarkupAttribute attribute)
         {
@@ -54,17 +81,10 @@ namespace Precisamento.MonoGame.Dialogue
 
         public override void Pop(DialogueState state)
         {
-            // state.HorizontalJustification = _originalHorizontal;
-            // state.VerticalJustification = _originalVertical;
-            // state.InnerJustification = _originalInner;
         }
 
         public override void Push(DialogueState state)
         {
-            // _originalHorizontal = state.HorizontalJustification;
-            // _originalVertical = state.VerticalJustification;
-            // _originalInner = state.InnerJustification;
-
             if(_hasHorizontal)
                 state.HorizontalJustification = _horizontal;
 

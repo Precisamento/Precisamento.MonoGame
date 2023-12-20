@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Precisamento.MonoGame.Dialogue.AttributeProcessors;
+using Precisamento.MonoGame.Dialogue.Characters;
 using Precisamento.MonoGame.YarnSpinner.Utils;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,7 @@ namespace Precisamento.MonoGame.Dialogue
 
         private Game _game;
         private DialogueNopProcessor _nop = new DialogueNopProcessor();
+        private ICharacterProcessorFactory? _characterHandler;
 
         public DialogueProcessorFactory(Game game)
         {
@@ -40,7 +42,8 @@ namespace Precisamento.MonoGame.Dialogue
             RegisterProcessorType<DialogueFontProcessor>("font");
             RegisterProcessorType<DialogueTransitionProcessor>("trans", "transition");
             RegisterProcessorType<DialogueJustificationProcessor>("just", "justification");
-            RegisterProcessorType<DialogueCharacterProcessor>("character");
+
+            _characterHandler = new CharacterProfileProcessorFactory(game, new());
         }
 
         public void RegisterProcessorType<T>(string attribute)
@@ -62,11 +65,6 @@ namespace Precisamento.MonoGame.Dialogue
         {
             var pool = new Pool<IDialogueProcessor>(createProcessor, (dp) => dp.Reset(), true);
             _processorPools.Add(attribute, pool);
-        }
-
-        public IDialogueProcessor[] HandleCharacter(ref MarkupParseResult markup)
-        {
-
         }
 
         public IDialogueProcessor Get(MarkupAttribute attribute)

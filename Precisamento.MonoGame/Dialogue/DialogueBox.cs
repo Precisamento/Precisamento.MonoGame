@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.TextureAtlases;
+using Precisamento.MonoGame.Dialogue.Characters;
 using Precisamento.MonoGame.Dialogue.Options;
 using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.Input;
@@ -187,6 +188,15 @@ namespace Precisamento.MonoGame.Dialogue
 
         #endregion
 
+        #region Characters
+
+        private ICharacterProcessorFactory _characterFactory;
+        private DialogueCharacterState _characterState = new();
+        private SpriteAnimationPlayer _characterBackgroundPlayer = new();
+        private SpriteAnimationPlayer _characterFacePlayer = new();
+
+        #endregion
+
         private bool Finished
         {
             get
@@ -249,6 +259,7 @@ namespace Precisamento.MonoGame.Dialogue
 
             _spriteBatchState = game.Services.GetService<SpriteBatchState>();
             _processorFactory = new DialogueProcessorFactory(game);
+            _characterFactory = new CharacterProfileProcessorFactory(game, _characterState, options.Characters ?? new());
             if(!options.IsOptionWindow)
                 _texture = new RenderTarget2D(_spriteBatchState.GraphicsDevice, _bounds.Width, _bounds.Height);
 
@@ -427,6 +438,7 @@ namespace Precisamento.MonoGame.Dialogue
             var frame = new DialogueFrame(
                 line,
                 _processorFactory,
+                _characterFactory,
                 state,
                 _sentenceSplitter,
                 startingFrameLine);
@@ -635,6 +647,11 @@ namespace Precisamento.MonoGame.Dialogue
         {
             if (!_running)
                 return;
+
+            if (_state.CurrentSpeaker != null)
+            {
+                state.SpriteBatch.DrawString(_state.Fonts.Peek(), $"Current Speaker: {_state.CurrentSpeaker}", new Vector2(20, 200), Color.Black);
+            }
 
             if(_optionWindow?._running ?? false)
             {

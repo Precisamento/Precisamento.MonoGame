@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using MonoGame.Extended.Sprites;
+using Precisamento.MonoGame.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +13,8 @@ namespace Precisamento.MonoGame.Dialogue.Characters
         public string Name { get; set; }
         public Sprite? CharacterSprite { get; set; }
         public Sprite? BackgroundSprite { get; set; }
-        public string DefaultCharacterSprite { get; set; }
-        public string DefaultBackground { get; set; }
+        public string? DefaultCharacterSprite { get; set; }
+        public string? DefaultBackground { get; set; }
         public Color? NameColor { get; set; }
         public Color? TextColor { get; set; }
     }

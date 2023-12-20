@@ -6,6 +6,7 @@ using MonoGame.Extended;
 using Precisamento.MonoGame.Collisions;
 using Precisamento.MonoGame.Components;
 using Precisamento.MonoGame.Dialogue;
+using Precisamento.MonoGame.Dialogue.Characters;
 using Precisamento.MonoGame.Dialogue.Options;
 using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.Input;
@@ -145,12 +146,33 @@ namespace Examples.Scenes.DialogueTest
         private static Entity CreateDialogueBox(Game game, World world, IResourceLoader resources, IActionManager actions, InputManager input, DialogueRunner runner)
         {
             var font = new SpriteFontWrapper(resources.Load<SpriteFont>("Content/Fonts/UIFont"));
-            var borders = resources.Load<Sprite>("Content/Sprites/UI");
+            var ui = resources.Load<Sprite>("Content/Sprites/UI");
+            var guy = new CharacterProfile()
+            {
+                Name = "Guy",
+                CharacterSprite = ui,
+                BackgroundSprite = ui,
+                DefaultCharacterSprite = "Man",
+                DefaultBackground = "Frame",
+                NameColor = Color.Blue
+            };
+
+            var cat = new CharacterProfile()
+            {
+                Name = "Cat",
+                CharacterSprite = ui,
+                BackgroundSprite = ui,
+                DefaultCharacterSprite = "Cat",
+                DefaultBackground = "Frame",
+                NameColor = Color.LimeGreen
+            };
+
+            var characters = new List<CharacterProfile>() { guy, cat };
 
             var entity = world.CreateEntity();
 
             var dialogue = new DialogueBoxBuilder(game)
-                .SetBackground(borders.Animations["Normal"].Frames[0])
+                .SetBackground(ui.Animations["Normal"].Frames[0])
                 .SetBounds(new Rectangle(10, 10, 300, 100))
                 .SetTextColor(Color.White)
                 .SetPadding(new Thickness(10))
@@ -173,16 +195,17 @@ namespace Examples.Scenes.DialogueTest
                     ShowDialogueOptions(game, world, resources, runner);
                 })
                 .SetOptionLocation(DialogueOptionRenderLocation.BelowLeft)
-                .SetOptionBoxBackground(borders.Animations["Normal"].Frames[0])
+                .SetOptionBoxBackground(ui.Animations["Normal"].Frames[0])
                 .SetOptionBoxPadding(new Thickness(25, 10, 12, 10))
                 .SetOptionBoxOffset(new Point(0, 5))
                 .SetOptionMargin(5)
-                .SetOptionBackground(borders.Animations["SelectBackground"])
+                .SetOptionBackground(ui.Animations["SelectBackground"])
                 .SetOptionBackgroundPadding(new Thickness(5, 1))
-                .SetOptionSelectIcon(borders.Animations["Cursor"])
+                .SetOptionSelectIcon(ui.Animations["Cursor"])
                 .SetOptionSelectIconLocation(SelectIconLocation.Left)
                 .SetOptionSelectIconOffset(new Point(-7, 0))
                 .SetOptionMoveSelection(actions, (int)Actions.Up, (int)Actions.Down)
+                .SetCharacters(characters)
                 .Build();
 
             dialogue.AttachToRunner(runner);

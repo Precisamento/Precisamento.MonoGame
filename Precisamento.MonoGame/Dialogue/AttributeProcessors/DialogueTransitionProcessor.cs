@@ -17,11 +17,37 @@ namespace Precisamento.MonoGame.Dialogue
 
     public class DialogueTransitionProcessor : DialogueProcessor
     {
-        private bool _hasWaitForInput = false;
+        private const string MISSING_PROPERTIES = $"Invalid [transition] attribute. Must contain at least one of 'wait' and 'transition'";
+
         private bool _hasLineEndBehavior = false;
         private bool _waitForInput;
         private LineTransitionBehavior _lineTransitionBehavior;
         private bool _set = false;
+
+        public DialogueTransitionProcessor()
+        { }
+
+        public DialogueTransitionProcessor(bool waitForInput)
+        {
+            _waitForInput = true;
+            if (!_waitForInput)
+            {
+                throw new ArgumentException(MISSING_PROPERTIES);
+            }
+        }
+
+        public DialogueTransitionProcessor(LineTransitionBehavior lineTransition)
+        {
+            _hasLineEndBehavior = true;
+            _lineTransitionBehavior = lineTransition;
+        }
+
+        public DialogueTransitionProcessor(bool waitForInput, LineTransitionBehavior lineTransition)
+        {
+            _waitForInput = waitForInput;
+            _hasLineEndBehavior = true;
+            _lineTransitionBehavior = lineTransition;
+        }
 
         public override void Init(Game game, MarkupAttribute attribute)
         {
@@ -30,7 +56,6 @@ namespace Precisamento.MonoGame.Dialogue
             if (attribute.Properties.TryGetValue("wait", out var wait))
             {
                 _waitForInput = wait.BoolValue;
-                _hasWaitForInput = true;
             }
 
             if(attribute.Properties.TryGetValue(attribute.Name, out var scroll))
@@ -55,10 +80,9 @@ namespace Precisamento.MonoGame.Dialogue
                 _hasLineEndBehavior = true;
             }
 
-            if(!_hasWaitForInput && !_hasLineEndBehavior)
+            if(!_waitForInput && !_hasLineEndBehavior)
             {
-                throw new ArgumentException(
-                    $"Invalid [transition] attribute. Must contain at least one of 'wait' and 'transition'");
+                throw new ArgumentException(MISSING_PROPERTIES);
             }
         }
 
@@ -78,10 +102,10 @@ namespace Precisamento.MonoGame.Dialogue
                 return;
 
             _set = true;
-            if(_hasLineEndBehavior)
+            if (_hasLineEndBehavior)
                 state.LineTransition = _lineTransitionBehavior;
 
-            if( _hasWaitForInput)
+            if (_waitForInput)
                 state.WaitForInput = _waitForInput;
         }
     }

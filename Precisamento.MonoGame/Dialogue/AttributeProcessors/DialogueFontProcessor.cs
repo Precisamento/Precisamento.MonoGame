@@ -16,6 +16,14 @@ namespace Precisamento.MonoGame.Dialogue
     {
         private IFont _font;
 
+        public DialogueFontProcessor()
+        { }
+
+        public DialogueFontProcessor(IFont font)
+        {
+            _font = font;
+        }
+
         public override void Init(Game game, MarkupAttribute attribute)
         {
             base.Init(game, attribute);

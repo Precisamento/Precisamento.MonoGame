@@ -2,12 +2,14 @@
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using MonoGame.Extended.TextureAtlases;
+using Precisamento.MonoGame.Dialogue.Characters;
 using Precisamento.MonoGame.Dialogue.Options;
 using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.Input;
 using Precisamento.MonoGame.YarnSpinner;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Precisamento.MonoGame.Dialogue
@@ -194,6 +196,15 @@ namespace Precisamento.MonoGame.Dialogue
 
                 return 0;
             });
+
+        public DialogueBoxBuilder SetCharacters(IEnumerable<CharacterProfile> characters)
+            => SetCharacters(characters.ToDictionary(cp => cp.Name));
+
+        public DialogueBoxBuilder SetCharacters(Dictionary<string, CharacterProfile> characters)
+        {
+            _options.Characters = characters;
+            return this;
+        }
 
         public DialogueBox Build()
         {

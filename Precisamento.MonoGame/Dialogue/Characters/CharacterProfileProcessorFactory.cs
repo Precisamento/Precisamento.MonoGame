@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Precisamento.MonoGame.Dialogue.AttributeProcessors;
+using Precisamento.MonoGame.YarnSpinner;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,27 +12,30 @@ namespace Precisamento.MonoGame.Dialogue.Characters
 {
     public class CharacterProfileProcessorFactory : ICharacterProcessorFactory
     {
-        private Dictionary<string, CharacterProfile> _characters;
-        private bool _trimName;
         private Game _game;
+        private bool _trimName;
+        public DialogueCharacterState _characterState;
+        private Dictionary<string, CharacterProfile> _characters;
 
-        public CharacterProfileProcessorFactory(Game game, Dictionary<string, CharacterProfile> characters)
+        public CharacterProfileProcessorFactory(Game game, DialogueCharacterState characterState, Dictionary<string, CharacterProfile> characters)
         {
             _game = game;
+            _characterState = characterState;
             _characters = characters;
+            //PopulateTestData();
         }
 
-        public IEnumerable<IDialogueProcessor> CreateProcessorsForCharacter(ref MarkupParseResult markup)
+        public IEnumerable<IDialogueProcessor> CreateProcessorsForCharacter(LocalizedLine line, out MarkupParseResult markup)
         {
-            if (!markup.TryGetAttributeWithName("character", out var attribute))
+            markup = line.Text;
+            var name = line.Character;
+            if (name is null)
                 return Array.Empty<IDialogueProcessor>();
 
             if (_trimName)
             {
-                markup = markup.DeleteRange(attribute);
+                markup = line.TextWithoutCharacterName;
             }
-
-            var name = attribute.Properties["name"].StringValue;
 
             if(!_characters.TryGetValue(name, out var profile))
                 return Array.Empty<IDialogueProcessor>();
@@ -44,12 +47,12 @@ namespace Precisamento.MonoGame.Dialogue.Characters
                 if (profile.NameColor.HasValue)
                 {
                     var color = new DialogueColorProcessor(profile.NameColor.Value);
-                    color.Init(_game, attribute.Position, attribute.Length);
+                    color.Init(_game, 0, name.Length);
                     processors.Add(color);
                 }
             }
 
-            var textStart = _trimName ? 0 : attribute.Length;
+            var textStart = _trimName ? 0 : name.Length;
             var textLength = markup.Text.Length - textStart;
 
             if (profile.TextColor.HasValue)
@@ -59,7 +62,79 @@ namespace Precisamento.MonoGame.Dialogue.Characters
                 processors.Add(color);
             }
 
+            if (GetCharacterParams(line, profile, out var characterParams))
+            {
+                var show = new ShowCharacterProcessor(characterParams!, _characterState);
+                processors.Add(show);
+            }
+
             return processors;
+        }
+
+        private bool GetCharacterParams(LocalizedLine line, CharacterProfile profile, out CharacterParams? characterParams)
+        {
+            characterParams = default;
+
+            if (line.Metadata.Contains("hide"))
+            {
+                return false;
+            }
+
+            var sprite = profile.DefaultCharacterSprite;
+            var background = profile.DefaultBackground;
+
+            if (sprite is null && background is null)
+                return false;
+
+            if (sprite != null
+                && profile.CharacterSprite != null
+                && !profile.CharacterSprite.Animations.ContainsKey(sprite))
+            {
+                throw new ArgumentException($"Character {profile.Name} has no face sprite {sprite}");
+            }
+
+            if (background != null
+                && profile.BackgroundSprite != null
+                && !profile.BackgroundSprite.Animations.ContainsKey(background))
+            {
+                throw new ArgumentException($"Character {profile.Name} has no background sprite {sprite}");
+            }
+
+            characterParams = new CharacterParams();
+
+            characterParams.Profile = profile;
+            characterParams.Sprite = sprite;
+            characterParams.Background = background;
+
+            return true;
+        }
+
+        private void PopulateTestData()
+        {
+            _characters = new Dictionary<string, CharacterProfile>()
+            {
+                {
+                    "Mystborn", new CharacterProfile
+                    {
+                        NameColor = Color.Purple,
+                        TextColor = Color.Blue,
+                        BackgroundSprite = new Graphics.Sprite(),
+                        DefaultBackground = ""
+                    }
+                },
+                {
+                    "Kelsier", new CharacterProfile
+                    {
+                        NameColor = Color.Gold
+                    }
+                },
+                {
+                    "Vin", new CharacterProfile
+                    {
+                        NameColor = Color.Red
+                    }
+                }
+            };
         }
     }
 }
