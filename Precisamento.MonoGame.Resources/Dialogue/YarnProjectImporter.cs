@@ -55,11 +55,10 @@ namespace Precisamento.MonoGame.Resources.Dialogue
             return new YarnDescription(result, localization);
         }
 
-        public override bool NeedsToReload(string input, string output, ResourceBuildCache cache)
-        {
-            var project = Project.LoadFromFile(input);
+        //public override bool NeedsToReload(string input, string output, ResourceBuildCache cache)
+        //{
+        //    var project = Project.LoadFromFile(input);
 
-
-        }
+        //}
     }
 }

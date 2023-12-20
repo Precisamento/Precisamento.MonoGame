@@ -28,7 +28,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Precisamento.MonoGame.YarnSpinner\Precisamento.MonoGame.YarnSpinner.csproj" />
     <ProjectReference Include="..\..\Precisamento.MonoGame\Precisamento.MonoGame.csproj" />
-    <ProjectReference Include="..\..\Soren.Extensions\Soren.Extensions\Soren.Extensions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Content\Sprites\MainMenuButtons.sprite">

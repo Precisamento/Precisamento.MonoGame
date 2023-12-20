@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Precisamento.MonoGame.Dialogue
 {
-    public class DialogueBoxOptions
+    public class DialogueBoxOptions : ICloneable
     {
         public Func<bool> ContinuePressed { get; set; }
         public Func<bool>? FastForwardPressed { get; set; }
@@ -47,5 +47,47 @@ namespace Precisamento.MonoGame.Dialogue
         public bool OptionScrollKeepSelectionCentered { get; set; }
         public bool OptionAllowMouseSelect { get; set; }
         public bool IsOptionWindow { get; set; }
+
+        public object Clone()
+        {
+            var other = new DialogueBoxOptions();
+            other.ContinuePressed = ContinuePressed;
+            other.FastForwardPressed = FastForwardPressed;
+            other.Dismiss = Dismiss;
+            other.Scroll = Scroll;
+            other.TextSpeed = TextSpeed;
+            other.Background = Background;
+            other.Bounds = Bounds;
+            other.Padding = Padding;
+            other.Font = Font;
+            other.TextColor = TextColor;
+            other.SentenceSplitter = SentenceSplitter;
+            other.OptionRenderLocation = OptionRenderLocation;
+            other.OptionBoxMaxBounds = OptionBoxMaxBounds;
+            other.OptionBoxMinBounds = OptionBoxMinBounds;
+            other.OptionBoxOffset = OptionBoxOffset;
+            other.OptionBoxPadding = OptionBoxPadding;
+            other.AlwaysUseOptionBoxMaxBounds = AlwaysUseOptionBoxMaxBounds;
+            other.OptionBoxWindowBackground = OptionBoxWindowBackground;
+            other.OptionBackground = OptionBackground;
+            other.OptionBackgroundPadding = OptionBackgroundPadding;
+            other.OptionSelectIcon = OptionSelectIcon;
+            other.OptionSelectIconLocation = OptionSelectIconLocation;
+            other.OptionSelectIconOffset = OptionSelectIconOffset;
+            other.DisplayDialogueBoxWhileOptionsAreShowing = DisplayDialogueBoxWhileOptionsAreShowing;
+            other.OptionQuickSelect = OptionQuickSelect;
+            other.OptionMoveSelection = OptionMoveSelection;
+            other.OptionSelected = OptionSelected;
+            other.OptionCanceled = OptionCanceled;
+            other.OptionMargin = OptionMargin;
+            other.OptionAllowScrollWrap = OptionAllowScrollWrap;
+            other.OptionAutoScrollInitialWait = OptionAutoScrollInitialWait;
+            other.OptionAutoScrollSecondaryWait = OptionAutoScrollSecondaryWait;
+            other.OptionScrollKeepSelectionCentered = OptionScrollKeepSelectionCentered;
+            other.OptionAllowMouseSelect = OptionAllowMouseSelect;
+            other.IsOptionWindow = IsOptionWindow;
+
+            return other;
+        }
     }
 }

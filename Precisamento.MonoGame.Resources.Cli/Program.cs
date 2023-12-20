@@ -4,18 +4,21 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Soren.Extensions.Logging;
 using System.Diagnostics;
 using System.CommandLine;
 using Yarn;
 using System.Threading.Tasks;
 using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Precisamento.MonoGame.Resources.Cli
 {
     public class Program
     {
-        private static LogAdapter _logger = LogAdapter.ColorConsoleAdapter();
+        private static Microsoft.Extensions.Logging.ILogger _logger;
         private static int _directoryErrors = 0;
         private static int _fileErrors = 0;
         private static int _exitCode = 0;
@@ -23,6 +26,20 @@ namespace Precisamento.MonoGame.Resources.Cli
 
         public static int Main(string[] args)
         {
+            var serviceBuilder = new ServiceCollection();
+            serviceBuilder.AddLogging(config =>
+            {
+                config.AddSerilog(new LoggerConfiguration()
+                    .WriteTo.Console(
+                        outputTemplate: "[{Level:t4} {Timestamp:HH:mm:ss}] {Message:lj}{NewLine}{Exception}",
+                        theme: AnsiConsoleTheme.Code)
+                    .MinimumLevel.Verbose()
+                    .CreateLogger());
+            });
+
+            var provider = serviceBuilder.BuildServiceProvider();
+            _logger = provider.GetService<ILogger<Program>>()!;
+
             var rootCommand = new RootCommand("Resource Processor for Precisamento.MonoGame projects");
             var configOption = new Option<FileInfo?>(
                 name: "--config",
@@ -53,7 +70,7 @@ namespace Precisamento.MonoGame.Resources.Cli
             {
                 if (configFile is null)
                 {
-                    _logger.Error("Must provide a valid config file containing the files to process.");
+                    _logger.LogError("Must provide a valid config file containing the files to process.");
                     _exitCode = 1;
                     return;
                 }
@@ -86,7 +103,7 @@ namespace Precisamento.MonoGame.Resources.Cli
 
                 stopwatch.Stop();
 
-                _logger.Info($"Finished processing files. Took {stopwatch.ElapsedMilliseconds} ms. {_directoryErrors} Directory Errors, {_fileErrors} File Errors");
+                _logger.LogInformation("Finished processing files. Took {Time}. {DirectoryErrors} Directory Errors. {FileErrors} File Errors.", stopwatch.ElapsedMilliseconds, _directoryErrors, _fileErrors);
             },
             configOption,
             rebuildOption,
@@ -103,15 +120,15 @@ namespace Precisamento.MonoGame.Resources.Cli
             var filesBeingProcessed = new Dictionary<string, ResourceBuildCache.CachedFile>();
             var processedFiles = new List<ResourceBuildCache.CachedFile>();
 
-            processor.NoConverterFound += (_, e) => _logger.Warning($"No {nameof(ResourceProcessor)} registered for the file {e}");
-            processor.ProcessingDirectory += (_, e) => _logger.Trace($"Processing directory {e.Name}");
+            processor.NoConverterFound += (_, e) => _logger.LogWarning("No {Type} registered for the file {File}", nameof(ResourceImporter), e);
+            processor.ProcessingDirectory += (_, e) => _logger.LogTrace("Processing directory {Directory}", e.Name);
             processor.ProcessDirectoryError += (_, e) =>
             {
                 _directoryErrors++;
-                _logger.Error($"Failed to find directory {e.Name}");
+                _logger.LogError("Failed to find directory {Directory}", e.Name);
             };
 
-            processor.ProcessedDirectory += (_, e) => _logger.Trace($"Finished processing directory {e.Name}");
+            processor.ProcessedDirectory += (_, e) => _logger.LogTrace("Finished processing directory {Directory}", e.Name);
             processor.ProcessingFile += (_, e) =>
             {
                 lock (key)
@@ -119,15 +136,15 @@ namespace Precisamento.MonoGame.Resources.Cli
                     filesBeingProcessed.Add(e.Name, new ResourceBuildCache.CachedFile()
                     {
                         Input = e.Name,
-                        ConverterName = e.Converter.GetType().FullName!
+                        ConverterName = e.Converter.Importer.GetType().FullName!
                     });
-                    _logger.Info($"Processing {e.Name} using {e.Converter.GetType().FullName}");
+                    _logger.LogInformation("Processing {File} using {Importer}", e.Name, e.Converter.Importer.GetType().FullName);
                 }
             };
 
             processor.ProcessedFile += (_, e) => 
             {
-                _logger.Info($"Finished processing {e.Name} -> {e.OutputFile}");
+                _logger.LogInformation("Finished processing {Input} -> {Output}", e.Name, e.OutputFile);
                 lock(key)
                 {
                     if(filesBeingProcessed.TryGetValue(e.Name, out var fileInProgress))
@@ -141,7 +158,7 @@ namespace Precisamento.MonoGame.Resources.Cli
                         }
                         catch(Exception ex)
                         {
-                            _logger.Error($"Error when caching file\nError:\n{ex}");
+                            _logger.LogError(ex, "Error when caching file:");
                         }
                     }
                 }
@@ -150,12 +167,12 @@ namespace Precisamento.MonoGame.Resources.Cli
             processor.ProcessFileError += (_, e) =>
             {
                 _fileErrors++;
-                _logger.Error($"Failed to process {e.Name}\nError:\n{e.Exception}");
+                _logger.LogError(e.Exception, "Failed to process {File}", e.Name);
             };
 
             processor.SkippingCachedFile += (_, e) =>
             {
-                _logger.Info($"Skipping cached file {e.Input}");
+                _logger.LogInformation("Skipping cached file {File}", e.Input);
                 lock (key)
                 {
                     processedFiles.Add(e);
@@ -196,7 +213,7 @@ namespace Precisamento.MonoGame.Resources.Cli
             }
             catch(Exception ex)
             {
-                _logger.Error($"Failed to update build cache file\nError:\n{ex}");
+                _logger.LogError(ex, "Failed to update build cache file:");
             }
         }
 
@@ -233,7 +250,7 @@ namespace Precisamento.MonoGame.Resources.Cli
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to deserialize config file {configFile}\nError:\n{ex}");
+                _logger.LogError(ex, "Failed to deserialize config file {File}", configFile);
                 return null;
             }
         }
@@ -266,7 +283,7 @@ namespace Precisamento.MonoGame.Resources.Cli
             }
             catch (Exception ex)
             {
-                _logger.Warning($"Failed to deserialize cache file\nError\n{ex}");
+                _logger.LogWarning(ex, "Failed to deserialize cache file:");
                 return new ResourceBuildCache();
             }
         }
@@ -287,7 +304,7 @@ namespace Precisamento.MonoGame.Resources.Cli
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Failed to load assembly {dll}\nError:\n{ex}");
+                    _logger.LogError(ex, "Failed to load assembly {Assembly}", dll);
                     return null;
                 }
             }
@@ -315,7 +332,7 @@ namespace Precisamento.MonoGame.Resources.Cli
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to create a {nameof(ResourceConverter)}\nError:\n{ex}");
+                _logger.LogError(ex, "Failed to create a {Convertor}", nameof(ResourceConverter));
                 return null;
             }
 

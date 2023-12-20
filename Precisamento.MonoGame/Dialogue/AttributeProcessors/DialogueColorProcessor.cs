@@ -17,6 +17,11 @@ namespace Precisamento.MonoGame.Dialogue
         {
         }
 
+        public DialogueColorProcessor(Color color)
+        {
+            Color = color;
+        }
+
         public override void Init(Game game, MarkupAttribute attribute)
         {
             base.Init(game, attribute);

@@ -1,5 +1,4 @@
 ﻿using MonoGame.Extended;
-using Soren.Extensions.Collections;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,7 +15,9 @@ namespace Precisamento.MonoGame.Resources.Sprites
                 .SelectMany(sad => sad.Frames)
                 .Select(f => f.TextureName);
 
-            bool sameTexture = textures.Unanimous();
+            var first = textures.FirstOrDefault();
+
+            bool sameTexture = textures.All(name => name == first);
 
             writer.Write(value.Name);
             writer.Write(sameTexture);

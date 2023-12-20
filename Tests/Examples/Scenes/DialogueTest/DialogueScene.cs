@@ -172,7 +172,7 @@ namespace Examples.Scenes.DialogueTest
                 {
                     ShowDialogueOptions(game, world, resources, runner);
                 })
-                .SetOptionLocation(DialogueOptionRenderLocation.Inline)
+                .SetOptionLocation(DialogueOptionRenderLocation.BelowLeft)
                 .SetOptionBoxBackground(borders.Animations["Normal"].Frames[0])
                 .SetOptionBoxPadding(new Thickness(25, 10, 12, 10))
                 .SetOptionBoxOffset(new Point(0, 5))

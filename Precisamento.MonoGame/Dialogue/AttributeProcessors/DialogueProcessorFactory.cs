@@ -40,6 +40,7 @@ namespace Precisamento.MonoGame.Dialogue
             RegisterProcessorType<DialogueFontProcessor>("font");
             RegisterProcessorType<DialogueTransitionProcessor>("trans", "transition");
             RegisterProcessorType<DialogueJustificationProcessor>("just", "justification");
+            RegisterProcessorType<DialogueCharacterProcessor>("character");
         }
 
         public void RegisterProcessorType<T>(string attribute)
@@ -61,6 +62,11 @@ namespace Precisamento.MonoGame.Dialogue
         {
             var pool = new Pool<IDialogueProcessor>(createProcessor, (dp) => dp.Reset(), true);
             _processorPools.Add(attribute, pool);
+        }
+
+        public IDialogueProcessor[] HandleCharacter(ref MarkupParseResult markup)
+        {
+
         }
 
         public IDialogueProcessor Get(MarkupAttribute attribute)

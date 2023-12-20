@@ -12,7 +12,8 @@ namespace Precisamento.MonoGame.Dialogue.AttributeProcessors
     public interface IDialogueProcessor
     {
         bool CustomDraw { get; }
-        MarkupAttribute Attribute { get; }
+        int Position { get; }
+        int Length { get; }
         Action? Release { get; set; }
         void Push(DialogueState state);
         void Pop(DialogueState state);

@@ -71,10 +71,10 @@ namespace Precisamento.MonoGame.Dialogue
             for (var letter = 0; letter < text.Length; letter++)
             {
                 foreach (var processor in Processors.Where(
-                    p => p.Attribute.Position == letter
-                    || p.Attribute.Position + p.Attribute.Length == letter))
+                    p => p.Position == letter
+                    || p.Position + p.Length == letter))
                 {
-                    if (processor.Attribute.Position == letter)
+                    if (processor.Position == letter)
                     {
                         processor.Push(state);
                         _processorStack.Add(processor);
@@ -85,7 +85,7 @@ namespace Precisamento.MonoGame.Dialogue
                         }
                     }
 
-                    if (processor.Attribute.Position + processor.Attribute.Length == letter)
+                    if (processor.Position + processor.Length == letter)
                     {
                         processor.Pop(state);
                         _processorStack.Remove(processor);
@@ -178,7 +178,7 @@ namespace Precisamento.MonoGame.Dialogue
 
             foreach (var processor in Processors)
             {
-                if (processor.Attribute.Position < attributeStart && processor.Attribute.Position + processor.Attribute.Length >= attributeStart)
+                if (processor.Position < attributeStart && processor.Position + processor.Length >= attributeStart)
                 {
                     processor.Push(dialogueState);
                     _processorStack.Add(processor);
@@ -212,8 +212,8 @@ namespace Precisamento.MonoGame.Dialogue
                 for (var letter = 0; letter < length; letter++)
                 {
                     foreach (var processor in Processors
-                        .Where(p => p.Attribute.Position == attributeStart + letter ||
-                            p.Attribute.Position + p.Attribute.Length == attributeStart + letter))
+                        .Where(p => p.Position == attributeStart + letter ||
+                            p.Position + p.Length == attributeStart + letter))
                     {
                         if (lastLetter != letter)
                         {
@@ -221,7 +221,7 @@ namespace Precisamento.MonoGame.Dialogue
                             lastLetter = letter;
                         }
 
-                        if (processor.Attribute.Position == attributeStart + letter)
+                        if (processor.Position == attributeStart + letter)
                         {
                             processor.Push(dialogueState);
                             _processorStack.Add(processor);

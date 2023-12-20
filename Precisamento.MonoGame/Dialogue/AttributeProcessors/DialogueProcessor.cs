@@ -13,7 +13,8 @@ namespace Precisamento.MonoGame.Dialogue
     {
         public virtual bool CustomDraw => false;
 
-        public MarkupAttribute Attribute { get; private set; }
+        public int Position { get; private set; }
+        public int Length { get; private set; }
 
         public Action? Release { get; set; }
 
@@ -23,7 +24,14 @@ namespace Precisamento.MonoGame.Dialogue
 
         public virtual void Init(Game game, MarkupAttribute attribute)
         {
-            Attribute = attribute;
+            Position = attribute.Position;
+            Length = attribute.Length;
+        }
+
+        public virtual void Init(Game game, int position, int length)
+        {
+            Position = position;
+            Length = length;
         }
 
         public abstract void Pop(DialogueState state);
