@@ -53,6 +53,7 @@ namespace Precisamento.MonoGame.Dialogue
         private List<DialogueFrame> _frames = new();
         private int _line = 0;
         private int _column = 0;
+        private int _lineAtStart = 0;
         private DialogueRunner? _runner;
         private float _ticks = 0;
         private bool _hasCustomProcessors = false;
@@ -390,6 +391,7 @@ namespace Precisamento.MonoGame.Dialogue
         {
             _running = true;
             _firstLineFromStart = true;
+            _lineAtStart = _frames.Count == 0 ? 0 : _frames[^1].LineStart + _frames[^1].Lines.Count;
             _spriteBatchState.SetRenderTarget(_texture);
             _spriteBatchState.GraphicsDevice.Clear(Color.Transparent);
             _spriteBatchState.SetRenderTarget(null);
@@ -416,10 +418,9 @@ namespace Precisamento.MonoGame.Dialogue
 
             var frame = CreateFrame(line, _state, isOption);
 
-            if (_firstLineFromStart || _state.LineTransition != LineTransitionBehavior.NewLine)
+            if (_lineAtStart == frame.LineStart || _state.LineTransition != LineTransitionBehavior.NewLine)
             {
                 _startingLineIndex = frame.LineStart;
-                _firstLineFromStart = false;
             }
             else
             {
@@ -482,6 +483,8 @@ namespace Precisamento.MonoGame.Dialogue
 
             if (Finished)
             {
+                UpdateCharacters(delta);
+
                 if (continuePressed || fastForward || !_state.WaitForInput)
                 {
                     _ticks = 0;
@@ -517,6 +520,8 @@ namespace Precisamento.MonoGame.Dialogue
                     needsRedraw = true;
                 }
             }
+
+            UpdateCharacters(delta);
 
             if (needsRedraw)
             {
@@ -560,6 +565,8 @@ namespace Precisamento.MonoGame.Dialogue
                     }
                     else
                     {
+                        if (_startingLineIndex == _lineAtStart && startingLine < _lineAtStart)
+                            return;
                         _startingLineIndex = startingLine;
                         return;
                     }
@@ -648,10 +655,7 @@ namespace Precisamento.MonoGame.Dialogue
             if (!_running)
                 return;
 
-            if (_state.CurrentSpeaker != null)
-            {
-                state.SpriteBatch.DrawString(_state.Fonts.Peek(), $"Current Speaker: {_state.CurrentSpeaker}", new Vector2(20, 200), Color.Black);
-            }
+            DrawCharacters(state);
 
             if(_optionWindow?._running ?? false)
             {

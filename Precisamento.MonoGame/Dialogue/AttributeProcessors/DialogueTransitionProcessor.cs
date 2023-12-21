@@ -19,6 +19,7 @@ namespace Precisamento.MonoGame.Dialogue
     {
         private const string MISSING_PROPERTIES = $"Invalid [transition] attribute. Must contain at least one of 'wait' and 'transition'";
 
+        private bool _hasWaitForInput = false;
         private bool _hasLineEndBehavior = false;
         private bool _waitForInput;
         private LineTransitionBehavior _lineTransitionBehavior;
@@ -29,11 +30,8 @@ namespace Precisamento.MonoGame.Dialogue
 
         public DialogueTransitionProcessor(bool waitForInput)
         {
-            _waitForInput = true;
-            if (!_waitForInput)
-            {
-                throw new ArgumentException(MISSING_PROPERTIES);
-            }
+            _waitForInput = waitForInput;
+            _hasWaitForInput = true;
         }
 
         public DialogueTransitionProcessor(LineTransitionBehavior lineTransition)
@@ -56,6 +54,7 @@ namespace Precisamento.MonoGame.Dialogue
             if (attribute.Properties.TryGetValue("wait", out var wait))
             {
                 _waitForInput = wait.BoolValue;
+                _hasWaitForInput = true;
             }
 
             if(attribute.Properties.TryGetValue(attribute.Name, out var scroll))
@@ -80,7 +79,7 @@ namespace Precisamento.MonoGame.Dialogue
                 _hasLineEndBehavior = true;
             }
 
-            if(!_waitForInput && !_hasLineEndBehavior)
+            if(!_hasWaitForInput && !_hasLineEndBehavior)
             {
                 throw new ArgumentException(MISSING_PROPERTIES);
             }

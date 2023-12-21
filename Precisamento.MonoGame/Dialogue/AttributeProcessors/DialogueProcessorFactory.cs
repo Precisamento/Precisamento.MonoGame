@@ -32,7 +32,6 @@ namespace Precisamento.MonoGame.Dialogue
 
         private Game _game;
         private DialogueNopProcessor _nop = new DialogueNopProcessor();
-        private ICharacterProcessorFactory? _characterHandler;
 
         public DialogueProcessorFactory(Game game)
         {
@@ -42,8 +41,6 @@ namespace Precisamento.MonoGame.Dialogue
             RegisterProcessorType<DialogueFontProcessor>("font");
             RegisterProcessorType<DialogueTransitionProcessor>("trans", "transition");
             RegisterProcessorType<DialogueJustificationProcessor>("just", "justification");
-
-            _characterHandler = new CharacterProfileProcessorFactory(game, new());
         }
 
         public void RegisterProcessorType<T>(string attribute)

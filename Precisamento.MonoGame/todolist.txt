@@ -16,3 +16,6 @@ Dialogue:
             Needs to account for a possible camera, so that the dialogue window can appear in the game world or just as part of the GUI.
 Resources:
     ☐ Allow custom definition of when a file needs to be reprocessed. This is necessary to allow types that just collect other files for processing (such as `.yarnproject` files).
+
+Graph:
+    ☐ Data structure that can be used to describe various types of navigation. Think 2D Mario overworlds, but can also be used for menus.
