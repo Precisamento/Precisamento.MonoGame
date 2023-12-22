@@ -104,7 +104,7 @@ namespace Precisamento.MonoGame.Dialogue
             if (_hasLineEndBehavior)
                 state.LineTransition = _lineTransitionBehavior;
 
-            if (_waitForInput)
+            if (_hasWaitForInput)
                 state.WaitForInput = _waitForInput;
         }
     }

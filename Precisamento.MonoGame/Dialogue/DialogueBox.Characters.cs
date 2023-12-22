@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Precisamento.MonoGame.Dialogue.Characters;
 using Precisamento.MonoGame.Graphics;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace Precisamento.MonoGame.Dialogue
 {
     public partial class DialogueBox
     {
-        public void UpdateCharacters(float delta)
+        private void UpdateCharacters(float delta)
         {
             var oldSpeaker = _characterState.CurrentSpeaker;
 
@@ -63,12 +64,30 @@ namespace Precisamento.MonoGame.Dialogue
             }
         }
 
-        public void DrawCharacters(SpriteBatchState state)
+        private void DrawCharacters(SpriteBatchState state)
         {
             _characterBackgroundPlayer.Draw(state,
                 new Rectangle(20, 200, 64, 64));
 
-            _characterFacePlayer.Draw(state, new Vector2(28, 208));
+            var drawParams = new SpriteDrawParams()
+            {
+                Color = new Color(150, 150, 150, 230)
+            };
+            
+
+            _characterFacePlayer.Draw(state, new Vector2(28, 208), ref drawParams);
+        }
+
+        private void HandleShowCommand(string[] args)
+        {
+            var character = ShowCommand.ParseShowCommand(args, _characterFactory);
+            _characterState.Adding.Add(character);
+        }
+
+        private void HandleHideCommand(string[] args)
+        {
+            var character = _characterFactory.GetCharacter(args[1]);
+            _characterState.Removing();
         }
     }
 }

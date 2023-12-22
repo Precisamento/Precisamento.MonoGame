@@ -12,5 +12,6 @@ namespace Precisamento.MonoGame.Dialogue.Characters
     public interface ICharacterProcessorFactory
     {
         public IEnumerable<IDialogueProcessor> CreateProcessorsForCharacter(LocalizedLine line, out MarkupParseResult markup);
+        public CharacterProfile GetCharacter(string name);
     }
 }

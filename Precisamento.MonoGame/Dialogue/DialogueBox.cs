@@ -48,7 +48,6 @@ namespace Precisamento.MonoGame.Dialogue
         private Rectangle _bounds;
         private DialogueState _state;
         private bool _running = false;
-        private bool _firstLineFromStart = false;
         private int _startingLineIndex = 0;
         private List<DialogueFrame> _frames = new();
         private int _line = 0;
@@ -77,7 +76,7 @@ namespace Precisamento.MonoGame.Dialogue
         private bool _displayDialogueBoxWhileOptionsAreShowing = true;
 
         private bool _optionRemoveIgnoredEntriesOnSelect = true;
-        private bool _optionShowSelectedOption = false;
+        private bool _optionShowSelectedOption = true;
 
         private int _optionSelectedIndex;
 
@@ -210,37 +209,39 @@ namespace Precisamento.MonoGame.Dialogue
 
         public DialogueBox(Game game, DialogueBoxOptions options)
         {
+            var optionSettings = options.OptionBoxOptions;
+
             _game = game;
             _continuePressed = options.ContinuePressed;
             _fastForwardPressed = options.FastForwardPressed;
             _dismiss = options.Dismiss;
             _scroll = options.Scroll;
-            _background = options.IsOptionWindow ? options.OptionBoxWindowBackground : options.Background;
+            _background = options.IsOptionWindow ? optionSettings.WindowBackground : options.Background;
             _bounds = options.Bounds;
             _padding = options.Padding;
             _sentenceSplitter = options.SentenceSplitter;
+            _isOptionWindow = options.IsOptionWindow;
 
             _displayDialogueBoxWhileOptionsAreShowing = options.DisplayDialogueBoxWhileOptionsAreShowing;
-            _optionQuickSelect = options.OptionQuickSelect;
-            _optionSelectMove = options.OptionMoveSelection;
-            _optionSelected = options.OptionSelected;
-            _optionCanceled = options.OptionCanceled;
+            _optionQuickSelect = optionSettings.QuickSelect;
+            _optionSelectMove = optionSettings.MoveSelection;
+            _optionSelected = optionSettings.Selected;
+            _optionCanceled = optionSettings.Canceled;
 
-            _optionAllowScrollWrap = options.OptionAllowScrollWrap;
-            _optionAutoScrollInitialWait = options.OptionAutoScrollInitialWait;
-            _optionAutoScrollSecondaryWait = options.OptionAutoScrollSecondaryWait;
-            _optionSelectedBackgroundPlayer.Animation = options.OptionBackground;
-            _optionSelectedBackgroundPadding = options.OptionBackgroundPadding;
-            _optionSelectedIconPlayer.Animation = options.OptionSelectIcon;
-            _optionSelectedIconLocation = options.OptionSelectIconLocation;
-            _optionSelectedIconOffset = options.OptionSelectIconOffset;
-            _optionWindowLocation = options.OptionRenderLocation;
-            _optionWindowMinBounds = options.OptionBoxMinBounds;
-            _optionWindowMaxBounds = options.OptionBoxMaxBounds;
-            _optionWindowOffset = options.OptionBoxOffset;
-            _optionWindowPadding = options.OptionBoxPadding;
-            _optionWindowAlwaysUseMaxBounds = options.AlwaysUseOptionBoxMaxBounds;
-            _isOptionWindow = options.IsOptionWindow;
+            _optionAllowScrollWrap = optionSettings.AllowScrollWrap;
+            _optionAutoScrollInitialWait = optionSettings.AutoScrollInitialWait;
+            _optionAutoScrollSecondaryWait = optionSettings.AutoScrollSecondaryWait;
+            _optionSelectedBackgroundPlayer.Animation = optionSettings.OptionBackground;
+            _optionSelectedBackgroundPadding = optionSettings.OptionBackgroundPadding;
+            _optionSelectedIconPlayer.Animation = optionSettings.SelectIcon;
+            _optionSelectedIconLocation = optionSettings.SelectIconLocation;
+            _optionSelectedIconOffset = optionSettings.SelectIconOffset;
+            _optionWindowLocation = optionSettings.RenderLocation;
+            _optionWindowMinBounds = optionSettings.MinBounds;
+            _optionWindowMaxBounds = optionSettings.MaxBounds;
+            _optionWindowOffset = optionSettings.Offset;
+            _optionWindowPadding = optionSettings.Padding;
+            _optionWindowAlwaysUseMaxBounds = optionSettings.AlwaysUseMaxBounds;
 
             _state = new DialogueState(options.TextColor, options.Font)
             {
@@ -260,7 +261,7 @@ namespace Precisamento.MonoGame.Dialogue
 
             _spriteBatchState = game.Services.GetService<SpriteBatchState>();
             _processorFactory = new DialogueProcessorFactory(game);
-            _characterFactory = new CharacterProfileProcessorFactory(game, _characterState, options.Characters ?? new());
+            _characterFactory = new CharacterProfileProcessorFactory(game, _characterState, options.ProfileOptions.Characters ?? new());
             if(!options.IsOptionWindow)
                 _texture = new RenderTarget2D(_spriteBatchState.GraphicsDevice, _bounds.Width, _bounds.Height);
 
@@ -319,6 +320,7 @@ namespace Precisamento.MonoGame.Dialogue
             _runner.LineNeedsPresented += OnLineNeedsPresented;
             _runner.DialogueCompleted += OnDialogueCompleted;
             _runner.OptionsNeedPresented += OnOptionsNeedPresenting;
+            _runner.CommandTriggered += ProcessCommand;
         }
 
         public void DetachFromRunner()
@@ -327,6 +329,23 @@ namespace Precisamento.MonoGame.Dialogue
             _runner!.LineNeedsPresented -= OnLineNeedsPresented;
             _runner!.DialogueCompleted -= OnDialogueCompleted;
             _runner!.OptionsNeedPresented -= OnOptionsNeedPresenting;
+            _runner!.CommandTriggered -= ProcessCommand;
+        }
+
+        private void ProcessCommand(object? sender, CommandTriggeredArgs e)
+        {
+            if (e.Handled)
+                return;
+
+            switch(e.CommandElements[0])
+            {
+                case "show":
+                    HandleShowCommand(e.CommandElements);
+                    break;
+                case "hide":
+                    HandleHideCommand(e.CommandElements);
+                    break;
+            }
         }
 
         private void OnOptionsNeedPresenting(object? sender, DialogueOption[] options)
@@ -390,7 +409,6 @@ namespace Precisamento.MonoGame.Dialogue
         private void OnDialogueStarted(object? sender, EventArgs e)
         {
             _running = true;
-            _firstLineFromStart = true;
             _lineAtStart = _frames.Count == 0 ? 0 : _frames[^1].LineStart + _frames[^1].Lines.Count;
             _spriteBatchState.SetRenderTarget(_texture);
             _spriteBatchState.GraphicsDevice.Clear(Color.Transparent);
@@ -487,6 +505,7 @@ namespace Precisamento.MonoGame.Dialogue
 
                 if (continuePressed || fastForward || !_state.WaitForInput)
                 {
+                    _characterState.Removing.AddRange(_characterState.Characters);
                     _ticks = 0;
                     _runner!.Continue();
                     return;

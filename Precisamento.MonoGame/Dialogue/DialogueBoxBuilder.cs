@@ -27,7 +27,7 @@ namespace Precisamento.MonoGame.Dialogue
         public DialogueBoxBuilder SetContinuePressed(Func<bool> continuedPressed)
         {
             _options.ContinuePressed = continuedPressed;
-            _options.OptionSelected = continuedPressed;
+            _options.OptionBoxOptions.Selected = continuedPressed;
             return this;
         }
 
@@ -97,7 +97,7 @@ namespace Precisamento.MonoGame.Dialogue
         public DialogueBoxBuilder SetPadding(Thickness padding)
         {
             _options.Padding = padding;
-            _options.OptionBoxPadding = padding;
+            _options.OptionBoxOptions.Padding = padding;
             return this;
         }
 
@@ -121,67 +121,67 @@ namespace Precisamento.MonoGame.Dialogue
 
         public DialogueBoxBuilder SetOptionLocation(DialogueOptionRenderLocation location)
         {
-            _options.OptionRenderLocation = location;
+            _options.OptionBoxOptions.RenderLocation = location;
             return this;
         }
 
         public DialogueBoxBuilder SetOptionBoxBackground(TextureRegion2D background)
         {
-            _options.OptionBoxWindowBackground = background;
+            _options.OptionBoxOptions.WindowBackground = background;
             return this;
         }
 
         public DialogueBoxBuilder SetOptionBoxPadding(Thickness padding)
         {
-            _options.OptionBoxPadding = padding;
+            _options.OptionBoxOptions.Padding = padding;
             return this;
         }
 
         public DialogueBoxBuilder SetOptionBoxOffset(Point offset)
         {
-            _options.OptionBoxOffset = offset;
+            _options.OptionBoxOptions.Offset = offset;
             return this;
         }
 
         public DialogueBoxBuilder SetOptionMargin(int margin)
         {
-            _options.OptionMargin = margin;
+            _options.OptionBoxOptions.OptionMargin = margin;
             return this;
         }
 
         public DialogueBoxBuilder SetOptionBackground(SpriteAnimation optionBackground)
         {
-            _options.OptionBackground = optionBackground;
+            _options.OptionBoxOptions.OptionBackground = optionBackground;
             return this;
         }
 
         public DialogueBoxBuilder SetOptionBackgroundPadding(Thickness padding)
         {
-            _options.OptionBackgroundPadding = padding;
+            _options.OptionBoxOptions.OptionBackgroundPadding = padding;
             return this;
         }
 
         public DialogueBoxBuilder SetOptionSelectIcon(SpriteAnimation optionSelectIcon)
         {
-            _options.OptionSelectIcon = optionSelectIcon;
+            _options.OptionBoxOptions.SelectIcon = optionSelectIcon;
             return this;
         }
 
         public DialogueBoxBuilder SetOptionSelectIconLocation(SelectIconLocation selectIconLocation)
         {
-            _options.OptionSelectIconLocation = selectIconLocation;
+            _options.OptionBoxOptions.SelectIconLocation = selectIconLocation;
             return this;
         }
 
         public DialogueBoxBuilder SetOptionSelectIconOffset(Point offset)
         {
-            _options.OptionSelectIconOffset = offset;
+            _options.OptionBoxOptions.SelectIconOffset = offset;
             return this;
         }
 
         public DialogueBoxBuilder SetOptionMoveSelection(Func<int> optionMoveSelection)
         {
-            _options.OptionMoveSelection = optionMoveSelection;
+            _options.OptionBoxOptions.MoveSelection = optionMoveSelection;
             return this;
         }
 
@@ -202,7 +202,7 @@ namespace Precisamento.MonoGame.Dialogue
 
         public DialogueBoxBuilder SetCharacters(Dictionary<string, CharacterProfile> characters)
         {
-            _options.Characters = characters;
+            _options.ProfileOptions.Characters = characters;
             return this;
         }
 

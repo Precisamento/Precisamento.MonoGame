@@ -25,6 +25,11 @@ namespace Precisamento.MonoGame.Dialogue.Characters
             //PopulateTestData();
         }
 
+        public CharacterProfile GetCharacter(string name)
+        {
+            return _characters[name];
+        }
+
         public IEnumerable<IDialogueProcessor> CreateProcessorsForCharacter(LocalizedLine line, out MarkupParseResult markup)
         {
             markup = line.Text;

@@ -17,5 +17,6 @@ namespace Precisamento.MonoGame.Dialogue.Characters
         public string? DefaultBackground { get; set; }
         public Color? NameColor { get; set; }
         public Color? TextColor { get; set; }
+        public PortraitBounds? PortraitBounds { get; set; }
     }
 }
