@@ -207,6 +207,17 @@ namespace Examples.Scenes.DialogueTest
                 .SetOptionMoveSelection(actions, (int)Actions.Up, (int)Actions.Down)
                 .SetCharacters(characters)
                 .SetCharacterFactory(new CharacterProfileProcessorFactory(game, characters.ToDictionary(c => c.Name)))
+                .SetDefaultCharacterBackgroundBounds(new PortraitBounds()
+                {
+                    BoundsType = PortraitBoundsType.SurroundImage,
+                    Padding = new Thickness(6)
+                })
+                .SetCharacterAddBehavior(CharacterAddBehavior.IgnoreOrMoveIfExplicitySet)
+                .SetNonSpeakerColor(new Color(150, 150, 150, 230))
+                .SetMultipleSpeakerOffset(new Point(20, 0))
+                .AddCharacterDrawOffset(new CharacterLocation(DialogueOptionRenderLocation.AboveLeft, new Point(5, -5)))
+                .AddCharacterDrawOffset(new CharacterLocation(DialogueOptionRenderLocation.AboveRight, new Point(-5)))
+                .AddCharacterDefaultLocation(new CharacterLocation(DialogueOptionRenderLocation.AboveLeft))
                 .Build();
 
             dialogue.AttachToRunner(runner);

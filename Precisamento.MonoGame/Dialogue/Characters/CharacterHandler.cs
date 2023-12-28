@@ -25,7 +25,7 @@ namespace Precisamento.MonoGame.Dialogue.Characters
         private int _maxCharactersInLocation;
         private CharacterAddBehavior _characterAddBehavior;
         private CharacterSpeakerBehavior _characterSpeakerBehavior;
-        private Color _nonSpeakerColor = new Color(150, 150, 150, 230);
+        private Color _nonSpeakerColor;
         private DarkenNonSpeaker _darkenBehavior;
         private bool _moveSpeakerToFront;
         private bool _addToFront;
