@@ -12,6 +12,7 @@ namespace Precisamento.MonoGame.Dialogue.Characters
         public string? Background { get; set; }
         public string? Sprite { get; set; }
         public bool Flipped { get; set; }
+        public bool Speaking { get; set; } = true;
         public CharacterLocation? Location { get; set; }
     }
 }

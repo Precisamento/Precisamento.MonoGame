@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
+using MonoGame.Extended.Tweening;
 using Precisamento.MonoGame.Dialogue.Options;
 using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.MathHelpers;
@@ -14,45 +16,90 @@ namespace Precisamento.MonoGame.Dialogue.Characters
     public class CharacterHandler
     {
         private ICharacterProcessorFactory _characterFactory;
+        private DialogueCharacterState _characterState;
         private List<List<CharacterDisplay>> _characterDisplay = new();
         private List<CharacterDisplay> _characters = new();
-        private DialogueCharacterState _characterState;
-        private int _maxCharacters = 9999;
-        private int _maxCharactersInLocation = 9999;
-        private CharacterAddBehavior _characterAddBehavior = CharacterAddBehavior.Overwrite;
-        private CharacterSpeakerBehavior _characterSpeakerBehavior = CharacterSpeakerBehavior.MostRecentOnly;
+        private List<CharacterMoving> _movingCharacters = new();
+        private Rectangle _dialogueBounds;
+        private int _maxCharacters;
+        private int _maxCharactersInLocation;
+        private CharacterAddBehavior _characterAddBehavior;
+        private CharacterSpeakerBehavior _characterSpeakerBehavior;
         private Color _nonSpeakerColor = new Color(150, 150, 150, 230);
-        private bool _moveSpeakerToFront = false;
-        private bool _addToFront = false;
-        private bool _speakerDirection = false;
-        private Point _speakerLineOffset = new Point(20, 0);
-        private List<CharacterLocation> _offsets = new List<CharacterLocation>();
-        private CharacterLocation? _defaultLocation;
-        private bool _flipFacesOnRight = true;
-        private bool _flipBackgroundsOnRight = false;
-        private PortraitBounds _defaultPortraitBounds = new PortraitBounds()
+        private DarkenNonSpeaker _darkenBehavior;
+        private bool _moveSpeakerToFront;
+        private bool _addToFront;
+        private Point _speakerLineOffset;
+        private List<CharacterLocation> _offsets;
+        private CharacterLocation _defaultLocation;
+        private bool _flipFacesOnRight;
+        private bool _flipBackgroundsOnRight;
+        private PortraitBounds _defaultPortraitBounds;
+
+        private Tweener _tweener = new();
+        private float _moveTime;
+
+        public CharacterHandler(CharacterDisplayOptions options, DialogueCharacterState characterState)
         {
-            BoundsType = PortraitBoundsType.SurroundImage,
-            Padding = new Thickness(6),
-        };
+            _characterFactory = options.CharacterFactory!;
+            _defaultPortraitBounds = options.DefaultPortraitBounds!;
+            _defaultLocation = options.DefaultLocation!;
+            _maxCharacters = options.MaxCharacters;
+            _maxCharactersInLocation = options.MaxCharactersInAGivenLocation;
+            _characterAddBehavior = options.AddBehavior;
+            _characterSpeakerBehavior = options.SpeakerBehavior;
+            _nonSpeakerColor = options.NonSpeakerColor;
+            _darkenBehavior = options.DarkenNonSpeakerBehavior;
+            _moveSpeakerToFront = options.MoveSpeakerToFront;
+            _addToFront = options.LeftIsFront;
+            _speakerLineOffset = options.MultipleSpeakerOffset;
+            _offsets = options.DrawOffsets;
+            _flipFacesOnRight = options.FlipFacesOnRight;
+            _flipBackgroundsOnRight = options.FlipBackgroundsOnRight;
+            _moveTime = options.MoveTime;
+            _characterState = characterState;
+        }
+
+        public void Initialize(Rectangle dialogueBounds)
+        {
+            _dialogueBounds = dialogueBounds;
+        }
+
+        public void Reset()
+        {
+            _characterDisplay.Clear();
+            _characters.Clear();
+        }
 
         public void Update(float delta)
         {
+            var updated = false;
             foreach (var character in _characterState.Adding)
             {
                 AddCharacter(character);
+                updated = true;
             }
 
             _characterState.Adding.Clear();
 
             foreach (var character in _characterState.Removing)
             {
-                RemoveCharacter(character.Profile.Name);
+                RemoveCharacter(character.Name);
+                updated = true;
             }
 
             _characterState.Removing.Clear();
 
+            updated |= _movingCharacters.Count > 0;
+            _tweener.Update(delta);
+
             UpdateSpeakers();
+
+            if (updated)
+            {
+                RemoveExcessCharacters();
+                SetAllCharacterDrawBounds();
+            }
 
             foreach(var character in _characters)
             {
@@ -61,17 +108,53 @@ namespace Precisamento.MonoGame.Dialogue.Characters
             }
         }
 
+        public void FastForward()
+        {
+            while(_movingCharacters.Count > 0)
+            {
+                _movingCharacters[^1].Tween.CancelAndComplete();
+            }
+        }
+
         public void Draw(SpriteBatchState state)
         {
+            var defaultParams = new SpriteDrawParams() { Color = Color.White };
+            var darkenParams = new SpriteDrawParams() { Color = _nonSpeakerColor };
+
             foreach(var character in _characters)
             {
-                var drawParams = new SpriteDrawParams()
-                {
-                    Color = character.Speaking ? Color.White : _nonSpeakerColor
-                };
+                var bgParams = (!character.Speaking && _darkenBehavior.HasFlag(DarkenNonSpeaker.Background))
+                    ? darkenParams
+                    : defaultParams;
 
-                character.BackgroundAnimationPlayer.Draw(state, character.BackgroundBounds);
-                character.FaceAnimationPlayer.Draw(state, character.FaceBounds, ref drawParams);
+                var faceParams = (!character.Speaking && _darkenBehavior.HasFlag(DarkenNonSpeaker.Face))
+                    ? darkenParams
+                    : defaultParams;
+
+                faceParams.Effects = character.Character.Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+
+                if (_flipFacesOnRight || _flipBackgroundsOnRight)
+                {
+                    var x = character.BackgroundBounds.IsEmpty ? character.FaceBounds.Center.X : character.BackgroundBounds.Center.X;
+                    if (x != 0)
+                    {
+                        if (x >= _dialogueBounds.Center.X)
+                        {
+                            if (_flipFacesOnRight)
+                            {
+                                faceParams.Effects = faceParams.Effects == SpriteEffects.FlipHorizontally ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
+                            }
+
+                            if (_flipBackgroundsOnRight)
+                            {
+                                bgParams.Effects = bgParams.Effects == SpriteEffects.FlipHorizontally ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
+                            }
+                        }
+                    }
+                }
+
+                character.BackgroundAnimationPlayer.Draw(state, character.BackgroundBounds, ref bgParams);
+                character.FaceAnimationPlayer.Draw(state, character.FaceBounds, ref faceParams);
             }
         }
 
@@ -99,13 +182,20 @@ namespace Precisamento.MonoGame.Dialogue.Characters
                         AddOverwriteCharacter(display, oldIndex);
                         break;
                     case CharacterAddBehavior.Move:
-                        throw new NotImplementedException();
+                        AddMoveCharacter(display, oldIndex);
+                        break;
                     case CharacterAddBehavior.Ignore:
                         AddIgnoreCharacter(display, oldIndex);
                         break;
                     case CharacterAddBehavior.IgnoreUnlessExplicitlySet:
                         if (explicitLocation)
                             AddOverwriteCharacter(display, oldIndex);
+                        else
+                            AddIgnoreCharacter(display, oldIndex);
+                        break;
+                    case CharacterAddBehavior.IgnoreOrMoveIfExplicitySet:
+                        if (explicitLocation)
+                            AddMoveCharacter(display, oldIndex);
                         else
                             AddIgnoreCharacter(display, oldIndex);
                         break;
@@ -169,6 +259,43 @@ namespace Precisamento.MonoGame.Dialogue.Characters
 
             _characters.RemoveAt(characterListIndex);
             _characters.Add(oldCharacter);
+        }
+
+        private void AddMoveCharacter(CharacterDisplay character, int characterListIndex)
+        {
+            var oldCharacter = _characters[characterListIndex];
+            AddOverwriteCharacter(character, characterListIndex);
+            var oldLocation = oldCharacter.Character.Location ?? _defaultLocation;
+            var newLocation = character.Character.Location ?? _defaultLocation;
+            if (oldLocation == newLocation)
+                return;
+
+            GetDrawBounds(character, 0, out var newFaceBounds, out var newBackgroundBounds);
+
+            var oldBounds = oldCharacter.BackgroundBounds.IsEmpty ? oldCharacter.FaceBounds : oldCharacter.BackgroundBounds;
+            var currentlyMoving = _movingCharacters.Find(m => m.Character.Character.Profile.Name == character.Character.Profile.Name);
+            currentlyMoving?.Tween.Cancel();
+
+            var bounds = newBackgroundBounds.IsEmpty ? newFaceBounds : newBackgroundBounds;
+
+            var moving = new CharacterMoving()
+            {
+                Position = currentlyMoving?.Position ?? oldBounds.Location.ToVector2(),
+                Character = character,
+                FinalFaceBounds = newFaceBounds,
+                FinalBackgroundBounds = newBackgroundBounds
+            };
+
+            moving.Tween = _tweener
+                .TweenTo(moving, moving => moving.Position, bounds.Location.ToVector2(), _moveTime)
+                .Easing(EasingFunctions.QuinticInOut)
+                .OnEnd(t => {
+                    _movingCharacters.Remove(moving);
+                    var list = GetCharactersAtLocation(newLocation!);
+                    SetCharacterDrawBounds(character, list.IndexOf(character));
+                });
+
+            _movingCharacters.Add(moving);
         }
 
         private void UpdateSpeakers()
@@ -237,132 +364,188 @@ namespace Precisamento.MonoGame.Dialogue.Characters
             }
         }
 
-        private void SetCharacterDrawBounds(CharacterDisplay display)
+        private void SetAllCharacterDrawBounds()
+        {
+            foreach (var list in _characterDisplay)
+            {
+                var i = 0;
+                foreach (var character in list)
+                {
+                    SetCharacterDrawBounds(character, i++);
+                }
+            }
+        }
+
+        private void SetCharacterDrawBounds(CharacterDisplay display, int index)
+        {
+            var asMoving = _movingCharacters.FirstOrDefault(moving => moving.Character == display);
+            if (asMoving != null)
+            {
+                var movePosition = asMoving.Position.ToPoint();
+                if (!asMoving.FinalFaceBounds.IsEmpty && !asMoving.FinalBackgroundBounds.IsEmpty)
+                {
+                    var offset = asMoving.FinalFaceBounds.Location - asMoving.FinalBackgroundBounds.Location;
+
+                    var faceBounds = asMoving.FinalFaceBounds;
+                    faceBounds.Location = movePosition + offset;
+                    display.FaceBounds = faceBounds;
+
+                    var backgroundBounds = asMoving.FinalBackgroundBounds;
+                    backgroundBounds.Location = movePosition;
+                    display.BackgroundBounds = backgroundBounds;
+                }
+                else if (!asMoving.FinalFaceBounds.IsEmpty)
+                {
+                    var faceBounds = asMoving.FinalFaceBounds;
+                    faceBounds.Location = movePosition;
+                    display.FaceBounds = faceBounds;
+                }
+                else if (!asMoving.FinalBackgroundBounds.IsEmpty)
+                {
+                    var backgroundBounds = asMoving.FinalBackgroundBounds;
+                    backgroundBounds.Location = movePosition;
+                    display.BackgroundBounds = backgroundBounds;
+                }
+            }
+            else
+            {
+                GetDrawBounds(display, index, out var faceBounds, out var backgroundBounds);
+                display.FaceBounds = faceBounds;
+                display.BackgroundBounds = backgroundBounds;
+            }
+        }
+
+        private PortraitBounds GetDisplayPortraitBounds(CharacterDisplay display)
+        {
+            return display.Character.Profile.PortraitBounds ?? _defaultPortraitBounds;
+        }
+
+        private void GetDrawBounds(CharacterDisplay display, int index, out Rectangle faceBounds, out Rectangle backgroundBounds)
         {
             var faceFrame = display.FaceAnimationPlayer.CurrentFrame;
-            if (faceFrame != null)
+            var backgroundFrame = display.BackgroundAnimationPlayer.CurrentFrame;
+            var location = display.Character.Location ?? _defaultLocation;
+            var offset = _offsets.FirstOrDefault(l => l.RenderLocation == location!.RenderLocation)?.ExactLocation ?? Point.Zero;
+
+            offset.X += _speakerLineOffset.X * index;
+            offset.Y += _speakerLineOffset.Y * index;
+
+            if (backgroundFrame != null)
             {
-                var bounds = display.Character.Profile.PortraitBounds ?? _defaultPortraitBounds;
-                Size2 backgroundSize;
+                var bounds = GetDisplayPortraitBounds(display);
+                Size backgroundSize = MeasureDisplay(display);
+
+                var backgroundPosition = WindowPositioning.PositionAround(_dialogueBounds, backgroundSize, location!.RenderLocation, offset);
+
+                backgroundBounds = new Rectangle(
+                    backgroundPosition,
+                    backgroundSize);
+
+                if (faceFrame != null)
+                {
+                    faceBounds = new Rectangle(
+                        backgroundPosition.X + bounds.Padding.Left,
+                        backgroundPosition.Y + bounds.Padding.Top,
+                        backgroundSize.Width - bounds.Padding.Width,
+                        backgroundSize.Height - bounds.Padding.Height);
+                }
+                else
+                {
+                    faceBounds = Rectangle.Empty;
+                }
+            }
+            else if (faceFrame != null)
+            {
+                var position = WindowPositioning.PositionAround(_dialogueBounds, (Size)faceFrame.Size, location!.RenderLocation, offset);
+
+                faceBounds = new Rectangle(
+                    position,
+                    (Point)faceFrame.Size);
+
+                backgroundBounds = Rectangle.Empty;
+            }
+            else
+            {
+                faceBounds = Rectangle.Empty;
+                backgroundBounds = Rectangle.Empty;
+            }
+        }
+
+        private Size MeasureDisplay(CharacterDisplay display)
+        {
+            var faceFrame = display.FaceAnimationPlayer.CurrentFrame;
+            var backgroundFrame = display.BackgroundAnimationPlayer.CurrentFrame;
+
+            if (backgroundFrame != null)
+            {
+                var bounds = GetDisplayPortraitBounds(display);
+                Size backgroundSize = new();
                 switch (bounds.BoundsType)
                 {
                     case PortraitBoundsType.ExactSize:
                         backgroundSize = bounds.Size;
                         break;
+                    case PortraitBoundsType.SpriteSize:
+                        backgroundSize = (Size?)backgroundFrame?.Size ?? new Size();
+                        backgroundSize += bounds.Padding.Size;
+                        break;
                     case PortraitBoundsType.SurroundImage:
-                        backgroundSize.Width = faceFrame.Width + bounds.Padding.Width;
-                        backgroundSize.Height = faceFrame.Height + bounds.Padding.Height;
+                        backgroundSize = (Size?)faceFrame?.Size ?? new Size();
+                        backgroundSize += bounds.Padding.Size;
                         break;
                 }
+
+                return backgroundSize;
             }
+            else if (faceFrame != null)
+            {
+                return (Size)faceFrame.Size;
+            }
+
+            return Size.Empty;
         }
 
-        private void RepositionWindow(Rectangle dialogueBounds, CharacterLocation location)
+        private void RemoveExcessCharacters()
         {
-            Point position = dialogueBounds.Location;
-
-            switch (location.RenderLocation)
+            while (_characters.Count > _maxCharacters)
             {
-                case DialogueOptionRenderLocation.AboveLeft:
-                    position.Y -= _bounds.Height;
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.AboveCenter:
-                    position.Y -= _bounds.Height;
-                    position.X += (dialogueBounds.Width - _bounds.Width) / 2;
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.AboveRight:
-                    position.Y -= _bounds.Height;
-                    position.X += dialogueBounds.Width - _bounds.Width;
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.BelowLeft:
-                    position.Y += dialogueBounds.Height;
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.BelowCenter:
-                    position.Y += dialogueBounds.Height;
-                    position.X += (dialogueBounds.Width - _bounds.Width) / 2;
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.BelowRight:
-                    position.Y += dialogueBounds.Height;
-                    position.X += dialogueBounds.Width - _bounds.Width;
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.LeftTop:
-                    position.X -= _bounds.Width;
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.LeftCenter:
-                    position.X -= _bounds.Width;
-                    position.Y += (dialogueBounds.Height - _bounds.Height) / 2;
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.LeftBottom:
-                    position.X -= _bounds.Width;
-                    position.Y += (dialogueBounds.Height - _bounds.Height);
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.RightTop:
-                    position.X += dialogueBounds.Width;
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.RightCenter:
-                    position.X += dialogueBounds.Width;
-                    position.Y += (dialogueBounds.Height - _bounds.Height) / 2;
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.RightBottom:
-                    position.X += dialogueBounds.Width;
-                    position.Y += (dialogueBounds.Height - _bounds.Height);
-                    position += _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.CustomTopLeftPosition:
-                    position = _optionWindowOffset;
-                    break;
-                case DialogueOptionRenderLocation.CustomTopRightPosition:
-                    position.X = _optionWindowOffset.X - _bounds.Width;
-                    position.Y = _optionWindowOffset.Y;
-                    break;
-                case DialogueOptionRenderLocation.CustomBottomLeftPosition:
-                    position.X = _optionWindowOffset.X;
-                    position.Y = _optionWindowOffset.Y - _bounds.Height;
-                    break;
-                case DialogueOptionRenderLocation.CustomBottomRightPosition:
-                    position.X = _optionWindowOffset.X - _bounds.Width;
-                    position.Y = _optionWindowOffset.Y - _bounds.Height;
-                    break;
-                case DialogueOptionRenderLocation.CustomCenterPosition:
-                    position.X = _optionWindowOffset.X - _bounds.Width / 2;
-                    position.Y = _optionWindowOffset.Y - _bounds.Height / 2;
-                    break;
-                default:
-                    throw new InvalidOperationException($"Invalid render position: {location.RenderLocation}");
+                var removing = _characters[0];
+                var list = GetCharactersAtLocation(removing.Character.Location ?? _defaultLocation!);
+                list.Remove(removing);
+                _characters.RemoveAt(0);
             }
 
-            _bounds.Location = position;
+            foreach(var list in _characterDisplay)
+            {
+                while (list.Count > _maxCharactersInLocation)
+                {
+                    // Get the character who spoke the longest time ago.
+                    var removing = list.MinBy(cd => _characters.IndexOf(cd));
+                    
+                    list.Remove(removing!);
+                    _characters.Remove(removing!);
+                }
+            }
         }
 
         private List<CharacterDisplay> GetCharactersAtLocation(CharacterLocation location)
         {
             switch(location.RenderLocation)
             {
-                case Options.DialogueOptionRenderLocation.List:
-                case Options.DialogueOptionRenderLocation.Inline:
-                case Options.DialogueOptionRenderLocation.AboveLeft:
-                case Options.DialogueOptionRenderLocation.AboveCenter:
-                case Options.DialogueOptionRenderLocation.AboveRight:
-                case Options.DialogueOptionRenderLocation.BelowLeft:
-                case Options.DialogueOptionRenderLocation.BelowCenter:
-                case Options.DialogueOptionRenderLocation.BelowRight:
-                case Options.DialogueOptionRenderLocation.LeftTop:
-                case Options.DialogueOptionRenderLocation.LeftCenter:
-                case Options.DialogueOptionRenderLocation.LeftBottom:
-                case Options.DialogueOptionRenderLocation.RightTop:
-                case Options.DialogueOptionRenderLocation.RightCenter:
-                case Options.DialogueOptionRenderLocation.RightBottom:
+                case DialogueOptionRenderLocation.List:
+                case DialogueOptionRenderLocation.Inline:
+                case DialogueOptionRenderLocation.AboveLeft:
+                case DialogueOptionRenderLocation.AboveCenter:
+                case DialogueOptionRenderLocation.AboveRight:
+                case DialogueOptionRenderLocation.BelowLeft:
+                case DialogueOptionRenderLocation.BelowCenter:
+                case DialogueOptionRenderLocation.BelowRight:
+                case DialogueOptionRenderLocation.LeftTop:
+                case DialogueOptionRenderLocation.LeftCenter:
+                case DialogueOptionRenderLocation.LeftBottom:
+                case DialogueOptionRenderLocation.RightTop:
+                case DialogueOptionRenderLocation.RightCenter:
+                case DialogueOptionRenderLocation.RightBottom:
                 {
                     var list = _characterDisplay.FirstOrDefault(l => l.Count > 0 && l[0].Character.Location?.RenderLocation == location.RenderLocation);
 
@@ -374,11 +557,11 @@ namespace Precisamento.MonoGame.Dialogue.Characters
 
                     return list;
                 }
-                case Options.DialogueOptionRenderLocation.CustomCenterPosition:
-                case Options.DialogueOptionRenderLocation.CustomTopLeftPosition:
-                case Options.DialogueOptionRenderLocation.CustomTopRightPosition:
-                case Options.DialogueOptionRenderLocation.CustomBottomLeftPosition:
-                case Options.DialogueOptionRenderLocation.CustomBottomRightPosition:
+                case DialogueOptionRenderLocation.CustomCenterPosition:
+                case DialogueOptionRenderLocation.CustomTopLeftPosition:
+                case DialogueOptionRenderLocation.CustomTopRightPosition:
+                case DialogueOptionRenderLocation.CustomBottomLeftPosition:
+                case DialogueOptionRenderLocation.CustomBottomRightPosition:
                 {
                     var list = _characterDisplay.FirstOrDefault(l => l.Count > 0 && l[0].Character.Location == location);
 

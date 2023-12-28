@@ -173,7 +173,7 @@ namespace Examples.Scenes.DialogueTest
 
             var dialogue = new DialogueBoxBuilder(game)
                 .SetBackground(ui.Animations["Normal"].Frames[0])
-                .SetBounds(new Rectangle(10, 10, 300, 100))
+                .SetBounds(new Rectangle(10, 200, 300, 100))
                 .SetTextColor(Color.White)
                 .SetPadding(new Thickness(10))
                 .SetFont(font)
@@ -194,7 +194,7 @@ namespace Examples.Scenes.DialogueTest
                 {
                     ShowDialogueOptions(game, world, resources, runner);
                 })
-                .SetOptionLocation(DialogueOptionRenderLocation.BelowLeft)
+                .SetOptionLocation(DialogueOptionRenderLocation.AboveLeft)
                 .SetOptionBoxBackground(ui.Animations["Normal"].Frames[0])
                 .SetOptionBoxPadding(new Thickness(25, 10, 12, 10))
                 .SetOptionBoxOffset(new Point(0, 5))
@@ -206,6 +206,7 @@ namespace Examples.Scenes.DialogueTest
                 .SetOptionSelectIconOffset(new Point(-7, 0))
                 .SetOptionMoveSelection(actions, (int)Actions.Up, (int)Actions.Down)
                 .SetCharacters(characters)
+                .SetCharacterFactory(new CharacterProfileProcessorFactory(game, characters.ToDictionary(c => c.Name)))
                 .Build();
 
             dialogue.AttachToRunner(runner);

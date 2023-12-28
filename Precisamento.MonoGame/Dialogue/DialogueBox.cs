@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -45,6 +46,7 @@ namespace Precisamento.MonoGame.Dialogue
         private Func<int>? _scroll;
         private Action? _dismiss;
         private TextureRegion2D? _background;
+        private SpriteAnimationPlayer _backgroundPlayer = new SpriteAnimationPlayer();
         private Rectangle _bounds;
         private DialogueState _state;
         private bool _running = false;
@@ -190,10 +192,10 @@ namespace Precisamento.MonoGame.Dialogue
 
         #region Characters
 
-        private ICharacterProcessorFactory _characterFactory;
+        private ICharacterProcessorFactory? _characterFactory;
         private DialogueCharacterState _characterState = new();
-        private SpriteAnimationPlayer _characterBackgroundPlayer = new();
-        private SpriteAnimationPlayer _characterFacePlayer = new();
+        private CharacterHandler? _characterHandler;
+        private Dictionary<string, CharacterProfile> _characters;
 
         #endregion
 
@@ -243,9 +245,17 @@ namespace Precisamento.MonoGame.Dialogue
             _optionWindowPadding = optionSettings.Padding;
             _optionWindowAlwaysUseMaxBounds = optionSettings.AlwaysUseMaxBounds;
 
+            _characters = options.CharacterOptions.Characters ?? new();
+            _characterFactory = options.CharacterOptions.CharacterFactory;
+            if (_characterFactory != null)
+            {
+                _characterHandler = new CharacterHandler(options.CharacterOptions, _characterState);
+            }
+
             _state = new DialogueState(options.TextColor, options.Font)
             {
-                TimePerLetter = options.TextSpeed / MINUTE_IN_MS
+                TimePerLetter = options.TextSpeed / MINUTE_IN_MS,
+                Characters = _characterState
             };
 
             SetDrawArea(false);
@@ -255,13 +265,12 @@ namespace Precisamento.MonoGame.Dialogue
             if (_state.DrawArea.Width < 0 || _state.DrawArea.Height < 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(options.Padding),
+                    "options.Padding",
                     "The text render bounds had a negative width or height.");
             }
 
             _spriteBatchState = game.Services.GetService<SpriteBatchState>();
             _processorFactory = new DialogueProcessorFactory(game);
-            _characterFactory = new CharacterProfileProcessorFactory(game, _characterState, options.ProfileOptions.Characters ?? new());
             if(!options.IsOptionWindow)
                 _texture = new RenderTarget2D(_spriteBatchState.GraphicsDevice, _bounds.Width, _bounds.Height);
 
@@ -413,11 +422,13 @@ namespace Precisamento.MonoGame.Dialogue
             _spriteBatchState.SetRenderTarget(_texture);
             _spriteBatchState.GraphicsDevice.Clear(Color.Transparent);
             _spriteBatchState.SetRenderTarget(null);
+            _characterHandler?.Initialize(_bounds);
         }
 
         private void OnDialogueCompleted(object? sender, EventArgs e)
         {
             _running = false;
+            _characterHandler?.Reset();
             _dismiss?.Invoke();
         }
 
@@ -480,7 +491,9 @@ namespace Precisamento.MonoGame.Dialogue
             if (!_running || _frames.Count == 0)
                 return;
 
-            switch(_mode)
+            _characterHandler?.Update(delta);
+
+            switch (_mode)
             {
                 case DialogueBoxMode.Text:
                     UpdateText(delta);
@@ -501,11 +514,8 @@ namespace Precisamento.MonoGame.Dialogue
 
             if (Finished)
             {
-                UpdateCharacters(delta);
-
                 if (continuePressed || fastForward || !_state.WaitForInput)
                 {
-                    _characterState.Removing.AddRange(_characterState.Characters);
                     _ticks = 0;
                     _runner!.Continue();
                     return;
@@ -518,6 +528,7 @@ namespace Precisamento.MonoGame.Dialogue
             else if (fastForward)
             {
                 FastForward();
+                _characterHandler?.FastForward();
                 needsRedraw = true;
             }
             else
@@ -539,8 +550,6 @@ namespace Precisamento.MonoGame.Dialogue
                     needsRedraw = true;
                 }
             }
-
-            UpdateCharacters(delta);
 
             if (needsRedraw)
             {
@@ -674,8 +683,6 @@ namespace Precisamento.MonoGame.Dialogue
             if (!_running)
                 return;
 
-            DrawCharacters(state);
-
             if(_optionWindow?._running ?? false)
             {
                 _optionWindow.Draw(state);
@@ -685,6 +692,9 @@ namespace Precisamento.MonoGame.Dialogue
                 }
             }
 
+            _characterHandler?.Draw(state);
+
+            _backgroundPlayer.Draw(state, _bounds);
             state.SpriteBatch.Draw(_background, _bounds, Color.White);
 
             if(_mode == DialogueBoxMode.Option)

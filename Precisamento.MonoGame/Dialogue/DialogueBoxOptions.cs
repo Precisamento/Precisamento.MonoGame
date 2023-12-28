@@ -44,13 +44,43 @@ namespace Precisamento.MonoGame.Dialogue
         }
     }
 
-    public class ProfileDisplayOptions : ICloneable
+    public class CharacterDisplayOptions : ICloneable
     {
         public Dictionary<string, CharacterProfile>? Characters { get; set; }
+        public ICharacterProcessorFactory? CharacterFactory { get; set; }
         public PortraitBounds? DefaultPortraitBounds { get; set; }
-        public CharacterLocation? DefaultCharacterLocation { get; set; }
+        public int MaxCharacters { get; set; } = 9999;
+        public int MaxCharactersInAGivenLocation { get; set; } = 9999;
+        public CharacterAddBehavior AddBehavior { get; set; } = CharacterAddBehavior.IgnoreUnlessExplicitlySet;
+        public CharacterSpeakerBehavior SpeakerBehavior { get; set; } = CharacterSpeakerBehavior.MostRecentOnly;
+        public Color NonSpeakerColor { get; set; } = Color.White;
+        public DarkenNonSpeaker DarkenNonSpeakerBehavior { get; set; } =
+            DarkenNonSpeaker.Both;
+        public bool MoveSpeakerToFront { get; set; }
+        public bool LeftIsFront { get; set; }
+        public Point MultipleSpeakerOffset { get; set; }
+        public List<CharacterLocation> DrawOffsets { get; set; } = new();
+        public CharacterLocation? DefaultLocation { get; set; }
+        public bool FlipFacesOnRight { get; set; }
+        public bool FlipBackgroundsOnRight { get; set; }
+        public float MoveTime { get; set; } = 0.5f;
 
         public object Clone() => MemberwiseClone();
+
+        public void SetDefaults()
+        {
+            // If no character factory has been set, there is no reason to set further defaults
+            // since they won't be used.
+            if (CharacterFactory is null)
+                return;
+
+            DefaultPortraitBounds ??= new PortraitBounds()
+            {
+                BoundsType = PortraitBoundsType.SpriteSize
+            };
+
+            DefaultLocation ??= new CharacterLocation(DialogueOptionRenderLocation.AboveLeft);
+        }
     }
 
     public class DialogueBoxOptions : ICloneable
@@ -69,13 +99,13 @@ namespace Precisamento.MonoGame.Dialogue
         public bool DisplayDialogueBoxWhileOptionsAreShowing { get; set; } = true;
         public bool IsOptionWindow { get; set; }
         public OptionBoxOptions OptionBoxOptions { get; set; } = new OptionBoxOptions();
-        public ProfileDisplayOptions ProfileOptions { get; set; } = new ProfileDisplayOptions();
+        public CharacterDisplayOptions CharacterOptions { get; set; } = new CharacterDisplayOptions();
 
         public object Clone()
         {
             var other = (DialogueBoxOptions)MemberwiseClone();
             other.OptionBoxOptions = (OptionBoxOptions)OptionBoxOptions.Clone();
-            other.ProfileOptions = (ProfileDisplayOptions)ProfileOptions.Clone();
+            other.CharacterOptions = (CharacterDisplayOptions)CharacterOptions.Clone();
 
             return other;
         }

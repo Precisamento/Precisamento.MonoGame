@@ -14,13 +14,11 @@ namespace Precisamento.MonoGame.Dialogue.Characters
     {
         private Game _game;
         private bool _trimName;
-        public DialogueCharacterState _characterState;
         private Dictionary<string, CharacterProfile> _characters;
 
-        public CharacterProfileProcessorFactory(Game game, DialogueCharacterState characterState, Dictionary<string, CharacterProfile> characters)
+        public CharacterProfileProcessorFactory(Game game, Dictionary<string, CharacterProfile> characters)
         {
             _game = game;
-            _characterState = characterState;
             _characters = characters;
             //PopulateTestData();
         }
@@ -69,7 +67,8 @@ namespace Precisamento.MonoGame.Dialogue.Characters
 
             if (GetCharacterParams(line, profile, out var characterParams))
             {
-                var show = new ShowCharacterProcessor(characterParams!, _characterState);
+                var show = new ShowCharacterProcessor(characterParams!);
+                show.Init(_game, textStart, textLength);
                 processors.Add(show);
             }
 
@@ -80,13 +79,14 @@ namespace Precisamento.MonoGame.Dialogue.Characters
         {
             characterParams = default;
 
-            if (line.Metadata.Contains("hide"))
+            if (line.Metadata.Contains("display:false"))
             {
                 return false;
             }
 
             var sprite = profile.DefaultCharacterSprite;
             var background = profile.DefaultBackground;
+            CharacterLocation? location = null;
 
             if (sprite is null && background is null)
                 return false;
@@ -105,11 +105,20 @@ namespace Precisamento.MonoGame.Dialogue.Characters
                 throw new ArgumentException($"Character {profile.Name} has no background sprite {sprite}");
             }
 
-            characterParams = new CharacterParams();
+            var locationMeta = line.Metadata.FirstOrDefault(m => m.StartsWith("location:"));
+            if (locationMeta != null)
+            {
+                var parts = locationMeta.Split(':');
+                location = ShowCommand.ParseLocation(parts[1]);
+            }
 
-            characterParams.Profile = profile;
-            characterParams.Sprite = sprite;
-            characterParams.Background = background;
+            characterParams = new CharacterParams()
+            {
+                Profile = profile,
+                Sprite = sprite,
+                Background = background,
+                Location = location
+            };
 
             return true;
         }

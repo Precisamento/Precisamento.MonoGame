@@ -1,7 +1,7 @@
-﻿using Precisamento.MonoGame.Dialogue.Options;
+﻿using Microsoft.Xna.Framework;
+using Precisamento.MonoGame.Dialogue.Options;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,8 +18,9 @@ namespace Precisamento.MonoGame.Dialogue.Characters
             RenderLocation = renderLocation;
         }
 
-        public CharacterLocation(Point exactLocation)
+        public CharacterLocation(DialogueOptionRenderLocation renderLocation, Point exactLocation)
         {
+            RenderLocation = renderLocation;
             ExactLocation = exactLocation;
         }
 

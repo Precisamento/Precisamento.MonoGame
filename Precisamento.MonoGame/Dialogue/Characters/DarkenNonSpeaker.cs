@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 
 namespace Precisamento.MonoGame.Dialogue.Characters
 {
-    public class DialogueCharacterState
+    [Flags]
+    public enum DarkenNonSpeaker
     {
-        public List<CharacterParams> Adding { get; } = new();
-        public List<CharacterProfile> Removing { get; } = new();
+        None,
+        Face = 1,
+        Background = 2,
+        Both = 3
     }
 }

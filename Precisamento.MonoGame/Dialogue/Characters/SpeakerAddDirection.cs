@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Precisamento.MonoGame.Dialogue.Characters
 {
-    public class DialogueCharacterState
+    public enum SpeakerAddDirection
     {
-        public List<CharacterParams> Adding { get; } = new();
-        public List<CharacterProfile> Removing { get; } = new();
+        Left,
+        Right
     }
 }

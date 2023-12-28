@@ -16,6 +16,7 @@ namespace Precisamento.MonoGame.Dialogue
         public Rectangle DrawArea { get; set; }
         public Vector2 CurrentPosition { get; set; }
         public bool WaitForInput { get; set; }
+        public DialogueCharacterState Characters { get; set; }
         public LineTransitionBehavior LineTransition { get; set; }
         public DialogueJustification HorizontalJustification { get; set; } = DialogueJustification.Left;
         public DialogueJustification VerticalJustification { get; set; } = DialogueJustification.Top;

@@ -1,8 +1,8 @@
 ﻿using Antlr4.Runtime.Misc;
+using Microsoft.Xna.Framework;
 using Precisamento.MonoGame.Dialogue.Options;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,15 +51,18 @@ namespace Precisamento.MonoGame.Dialogue.Characters
             {
                 case "sprite":
                 case "face":
-                    character.Sprite = parts[1];
+                    SetSprite(parts[1], character);
                     break;
                 case "bg":
                 case "background":
-                    character.Background = parts[2];
+                    SetBackground(parts[1], character);
                     break;
                 case "flip":
                 case "flipped":
-                    character.Flipped = bool.Parse(parts[3]);
+                    SetFlipped(parts[1], character);
+                    break;
+                case "location":
+                    SetLocation(parts[1], character);
                     break;
             }
         }
@@ -84,7 +87,7 @@ namespace Precisamento.MonoGame.Dialogue.Characters
             character.Location = ParseLocation(value);
         }
 
-        private static CharacterLocation ParseLocation(string value)
+        public static CharacterLocation ParseLocation(string value)
         {
             switch(value.ToLower())
             {
@@ -103,7 +106,7 @@ namespace Precisamento.MonoGame.Dialogue.Characters
 
             var parts = value.Split(',');
             var point = new Point(int.Parse(parts[0]), int.Parse(parts[1]));
-            return new CharacterLocation(point);
+            return new CharacterLocation(DialogueOptionRenderLocation.CustomTopLeftPosition, point);
         }
     }
 }

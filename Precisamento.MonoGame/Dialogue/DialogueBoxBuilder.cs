@@ -202,13 +202,110 @@ namespace Precisamento.MonoGame.Dialogue
 
         public DialogueBoxBuilder SetCharacters(Dictionary<string, CharacterProfile> characters)
         {
-            _options.ProfileOptions.Characters = characters;
+            _options.CharacterOptions.Characters = characters;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetCharacterFactory(ICharacterProcessorFactory characterFactory)
+        {
+            _options.CharacterOptions.CharacterFactory = characterFactory;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetDefaultCharacterBackgroundBounds(PortraitBounds bounds)
+        {
+            _options.CharacterOptions.DefaultPortraitBounds = bounds;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetMaxCharacters(int max)
+        {
+            _options.CharacterOptions.MaxCharacters = max;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetMaxCharactersInAGivenLocation(int max)
+        {
+            _options.CharacterOptions.MaxCharactersInAGivenLocation = max;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetCharacterAddBehavior(CharacterAddBehavior addBehavior)
+        {
+            _options.CharacterOptions.AddBehavior = addBehavior;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetCharacterSpeakerBehavior(CharacterSpeakerBehavior speakerBehavior)
+        {
+            _options.CharacterOptions.SpeakerBehavior = speakerBehavior;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetNonSpeakerColor(Color color)
+        {
+            _options.CharacterOptions.NonSpeakerColor = color;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetDarkenNonSpeakerBehavior(DarkenNonSpeaker darkenBehavior)
+        {
+            _options.CharacterOptions.DarkenNonSpeakerBehavior = darkenBehavior;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetMoveSpeakerToFront(bool value)
+        {
+            _options.CharacterOptions.MoveSpeakerToFront = value;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetSpeakerLeftIsFront(bool value)
+        {
+            _options.CharacterOptions.LeftIsFront = value;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetMultipleSpeakerOffset(Point offset)
+        {
+            _options.CharacterOptions.MultipleSpeakerOffset = offset;
+            return this;
+        }
+
+        public DialogueBoxBuilder AddCharacterDrawOffset(CharacterLocation offset)
+        {
+            _options.CharacterOptions.DrawOffsets.Add(offset);
+            return this;
+        }
+
+        public DialogueBoxBuilder AddCharacterDefaultLocation(CharacterLocation defaultLocation)
+        {
+            _options.CharacterOptions.DefaultLocation = defaultLocation;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetCharacterFlipFacesOnRight(bool value)
+        {
+            _options.CharacterOptions.FlipFacesOnRight = value;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetCharacterFlipBackgroundsOnRight(bool value)
+        {
+            _options.CharacterOptions.FlipBackgroundsOnRight = value;
+            return this;
+        }
+
+        public DialogueBoxBuilder SetCharacterMoveTime(float value)
+        {
+            _options.CharacterOptions.MoveTime = value;
             return this;
         }
 
         public DialogueBox Build()
         {
             _options.SentenceSplitter ??= new SeparatorSplitter();
+            _options.CharacterOptions.SetDefaults();
             return new DialogueBox(_game, _options);
         }
     }

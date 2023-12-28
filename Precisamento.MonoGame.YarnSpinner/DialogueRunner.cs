@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Yarn;
 using Yarn.Markup;
 
@@ -263,32 +264,7 @@ namespace Precisamento.MonoGame.YarnSpinner
         private void HandleCommand(Command commandValue)
         {
             var elements = SplitCommandText(commandValue.Text).ToArray();
-            var command = elements[0];
-            if (CommandHandler.TryRunCommand(elements, this, out _waitForCommand))
-            {
-                if(RunCommandTriggeredAfterCommandHandler)
-                    CommandTriggered?.Invoke(this, new CommandTriggeredArgs(elements, true));
-
-                if (_waitForCommand is null || _waitForCommand.Complete)
-                {
-                    _waitForCommand = null;
-                    Continue();
-                }
-                else
-                {
-                    IsRunning = false;
-                }
-            }
-            else if(CommandTriggered != null)
-            {
-                CommandTriggered.Invoke(this, new CommandTriggeredArgs(elements, false));
-            }
-            else
-            {
-                Error($"Yarn: No command registered for \"{command}\" and no handler for the {nameof(CommandTriggered)} event subscribed. The dialogue will never continue.");
-                if (!ThrowOnError)
-                    Continue();
-            }
+            TriggerCommand(elements);
         }
 
         private void HandleNodeStarted(string node)
@@ -358,6 +334,36 @@ namespace Precisamento.MonoGame.YarnSpinner
                 result.Complete = true;
             });
             return result;
+        }
+
+        public void TriggerCommand(string[] args)
+        {
+            var command = args[0];
+            if (CommandHandler.TryRunCommand(args, this, out _waitForCommand))
+            {
+                if (RunCommandTriggeredAfterCommandHandler)
+                    CommandTriggered?.Invoke(this, new CommandTriggeredArgs(args, true));
+
+                if (_waitForCommand is null || _waitForCommand.Complete)
+                {
+                    _waitForCommand = null;
+                    Continue();
+                }
+                else
+                {
+                    IsRunning = false;
+                }
+            }
+            else if (CommandTriggered != null)
+            {
+                CommandTriggered.Invoke(this, new CommandTriggeredArgs(args, false));
+            }
+            else
+            {
+                Error($"Yarn: No command registered for \"{command}\" and no handler for the {nameof(CommandTriggered)} event subscribed. The dialogue will never continue.");
+                if (!ThrowOnError)
+                    Continue();
+            }
         }
 
         public void Update()

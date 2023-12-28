@@ -10,13 +10,11 @@ namespace Precisamento.MonoGame.Dialogue.AttributeProcessors
     public class ShowCharacterProcessor : DialogueProcessor
     {
         private CharacterParams _character;
-        DialogueCharacterState _characterState;
         private bool _set = false;
 
-        public ShowCharacterProcessor(CharacterParams character, DialogueCharacterState characterState)
+        public ShowCharacterProcessor(CharacterParams character)
         {
             _character = character;
-            _characterState = characterState;
         }
 
         public override void Reset()
@@ -35,7 +33,7 @@ namespace Precisamento.MonoGame.Dialogue.AttributeProcessors
             if (_set)
                 return;
 
-            _characterState.Adding.Add(_character);
+            state.Characters.Adding.Add(_character);
             _set = true;
         }
     }

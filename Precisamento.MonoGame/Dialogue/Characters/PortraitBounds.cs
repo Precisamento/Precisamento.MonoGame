@@ -11,6 +11,7 @@ namespace Precisamento.MonoGame.Dialogue.Characters
     public enum PortraitBoundsType
     {
         ExactSize,
+        SpriteSize,
         SurroundImage,
     }
 
@@ -18,6 +19,6 @@ namespace Precisamento.MonoGame.Dialogue.Characters
     {
         public PortraitBoundsType BoundsType { get; set; }
         public Thickness Padding { get; set; }
-        public Size2 Size { get; set; }
+        public Size Size { get; set; }
     }
 }

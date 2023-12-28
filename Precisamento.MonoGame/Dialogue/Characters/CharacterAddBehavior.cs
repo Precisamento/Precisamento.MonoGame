@@ -29,6 +29,12 @@ namespace Precisamento.MonoGame.Dialogue.Characters
         IgnoreUnlessExplicitlySet,
 
         /// <summary>
+        /// Ignores the new character position unless the location has been explicitly specified,
+        /// in which the character portrait moves.
+        /// </summary>
+        IgnoreOrMoveIfExplicitySet,
+
+        /// <summary>
         /// Allows multiple portraits of the same character to exist.
         /// </summary>
         Multiply
