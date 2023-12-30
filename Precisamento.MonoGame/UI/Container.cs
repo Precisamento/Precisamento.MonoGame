@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Precisamento.MonoGame.UI
 {
-    public class Container
+    public class Container : Control
     {
     }
 }
