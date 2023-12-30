@@ -19,7 +19,7 @@ namespace Precisamento.MonoGame.Dialogue
         public Point Offset { get; set; }
         public Thickness Padding { get; set; }
         public bool AlwaysUseMaxBounds { get; set; }
-        public TextureRegion2D? WindowBackground { get; set; }
+        public SpriteAnimation? WindowBackground { get; set; }
         public SpriteAnimation? OptionBackground { get; set; }
         public Thickness OptionBackgroundPadding { get; set; }
         public SpriteAnimation? SelectIcon { get; set; }
@@ -90,7 +90,7 @@ namespace Precisamento.MonoGame.Dialogue
         public Action? Dismiss { get; set; }
         public Func<int>? Scroll { get; set; }
         public int TextSpeed { get; set; }
-        public TextureRegion2D? Background { get; set; }
+        public SpriteAnimation? Background { get; set; }
         public Rectangle Bounds { get; set; }
         public Thickness Padding { get; set; }
         public IFont Font { get; set; }

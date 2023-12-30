@@ -45,7 +45,7 @@ namespace Precisamento.MonoGame.Dialogue
         private Func<bool>? _fastForwardPressed;
         private Func<int>? _scroll;
         private Action? _dismiss;
-        private TextureRegion2D? _background;
+        private SpriteAnimation? _background;
         private SpriteAnimationPlayer _backgroundPlayer = new SpriteAnimationPlayer();
         private Rectangle _bounds;
         private DialogueState _state;
@@ -219,6 +219,7 @@ namespace Precisamento.MonoGame.Dialogue
             _dismiss = options.Dismiss;
             _scroll = options.Scroll;
             _background = options.IsOptionWindow ? optionSettings.WindowBackground : options.Background;
+            _backgroundPlayer.Animation = _background;
             _bounds = options.Bounds;
             _padding = options.Padding;
             _sentenceSplitter = options.SentenceSplitter;
@@ -695,7 +696,6 @@ namespace Precisamento.MonoGame.Dialogue
             _characterHandler?.Draw(state);
 
             _backgroundPlayer.Draw(state, _bounds);
-            state.SpriteBatch.Draw(_background, _bounds, Color.White);
 
             if(_mode == DialogueBoxMode.Option)
             {

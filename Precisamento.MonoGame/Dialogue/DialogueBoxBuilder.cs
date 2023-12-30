@@ -84,6 +84,12 @@ namespace Precisamento.MonoGame.Dialogue
 
         public DialogueBoxBuilder SetBackground(TextureRegion2D background)
         {
+            _options.Background = new SpriteAnimation(background);
+            return this;
+        }
+
+        public DialogueBoxBuilder SetBackground(SpriteAnimation background)
+        {
             _options.Background = background;
             return this;
         }
@@ -126,6 +132,12 @@ namespace Precisamento.MonoGame.Dialogue
         }
 
         public DialogueBoxBuilder SetOptionBoxBackground(TextureRegion2D background)
+        {
+            _options.OptionBoxOptions.WindowBackground = new SpriteAnimation(background);
+            return this;
+        }
+
+        public DialogueBoxBuilder SetOptionBoxBackground(SpriteAnimation background)
         {
             _options.OptionBoxOptions.WindowBackground = background;
             return this;

@@ -136,9 +136,9 @@ namespace Examples.Scenes.CollisionTest
             var font = new SpriteFontWrapper(resources.Load<SpriteFont>("Content/Fonts/UIFont"));
             var ui = resources.Load<Sprite>("Content/Sprites/UI");
 
-            var square = new ButtonComponent(ui, "Normal", "Hover", "Press");
-            var circle = new ButtonComponent(ui, "Normal", "Hover", "Press");
-            var triangle = new ButtonComponent(ui, "Normal", "Hover", "Press");
+            var square = new ButtonComponent(ui, "Normal", "Hover", "Press", null);
+            var circle = new ButtonComponent(ui, "Normal", "Hover", "Press", null);
+            var triangle = new ButtonComponent(ui, "Normal", "Hover", "Press", null);
 
             square.Clicked += () => SetSquareCollider(playerEntity);
             circle.Clicked += () => SetCircleCollider(playerEntity);

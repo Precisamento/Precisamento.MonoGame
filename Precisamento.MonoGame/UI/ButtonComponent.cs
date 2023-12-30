@@ -12,8 +12,10 @@ namespace Precisamento.MonoGame.UI
         public Sprite Sprite { get; set; }
         public string CurrentState { get; set; }
         public string NormalState { get; set; }
-        public string HoverState { get; set; }
-        public string PressState { get; set; }
+        public string? HoverState { get; set; }
+        public string? PressState { get; set; }
+        public string? DisabledState { get; set; }
+        public bool Enabled { get; set; } = true;
         public bool IsDown { get; set; }
 
         public event Action? Clicked;
@@ -22,13 +24,14 @@ namespace Precisamento.MonoGame.UI
         {
         }
 
-        public ButtonComponent(Sprite sprite, string normalState, string hoverState, string pressState)
+        public ButtonComponent(Sprite sprite, string normalState, string? hoverState, string? pressState, string? disabledState)
         {
             Sprite = sprite;
             CurrentState = normalState;
             NormalState = normalState;
             HoverState = hoverState;
             PressState = pressState;
+            DisabledState = disabledState;
         }
 
         public void OnClick()

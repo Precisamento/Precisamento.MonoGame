@@ -34,8 +34,8 @@ namespace Precisamento.MonoGame.Dialogue
             Length = length;
         }
 
-        public abstract void Pop(DialogueState state);
-        public abstract void Push(DialogueState state);
+        public virtual void Pop(DialogueState state) {}
+        public virtual void Push(DialogueState state) {}
 
         public virtual void Reset()
         {

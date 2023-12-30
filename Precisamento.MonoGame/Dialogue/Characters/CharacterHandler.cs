@@ -300,6 +300,9 @@ namespace Precisamento.MonoGame.Dialogue.Characters
 
         private void UpdateSpeakers()
         {
+            if (_characters.Count == 0)
+                return;
+
             switch (_characterSpeakerBehavior)
             {
                 case CharacterSpeakerBehavior.MostRecentOnly:

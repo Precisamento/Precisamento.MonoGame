@@ -14,5 +14,15 @@ namespace Precisamento.MonoGame.Graphics
         public Vector2 Origin { get; set; }
         public List<TextureRegion2D> Frames { get; set; }
         public int StartFrameIndex { get; set; }
+
+        public SpriteAnimation()
+        {
+        }
+
+        public SpriteAnimation(TextureRegion2D singleFrame)
+        {
+            Name = "default";
+            Frames = new List<TextureRegion2D>() { singleFrame };
+        }
     }
 }

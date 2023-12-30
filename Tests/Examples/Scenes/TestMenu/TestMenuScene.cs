@@ -46,7 +46,7 @@ namespace Examples.Scenes.TestMenu
 
             foreach(var (title, action) in actions)
             {
-                var button = new ButtonComponent(ui, "Normal", "Hover", "Press");
+                var button = new ButtonComponent(ui, "Normal", "Hover", "Press", null);
                 button.Clicked += () => SceneManager.PushScene(action(game));
 
                 var collider = new BoxCollider(200, 50);

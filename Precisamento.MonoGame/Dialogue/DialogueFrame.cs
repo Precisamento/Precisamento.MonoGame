@@ -31,7 +31,7 @@ namespace Precisamento.MonoGame.Dialogue
         public DialogueFrame(
             LocalizedLine line,
             DialogueProcessorFactory processorFactory,
-            ICharacterProcessorFactory characterFactory,
+            ICharacterProcessorFactory? characterFactory,
             DialogueState state,
             ISentenceSplitter sentenceSplitter,
             int lineStart)
@@ -42,7 +42,7 @@ namespace Precisamento.MonoGame.Dialogue
         public void Init(
             LocalizedLine line,
             DialogueProcessorFactory processorFactory,
-            ICharacterProcessorFactory characterFactory,
+            ICharacterProcessorFactory? characterFactory,
             DialogueState state,
             ISentenceSplitter sentenceSplitter,
             int lineStart)
@@ -55,16 +55,26 @@ namespace Precisamento.MonoGame.Dialogue
         private void GenerateLines(
             LocalizedLine line,
             DialogueProcessorFactory processorFactory,
-            ICharacterProcessorFactory characterFactory,
+            ICharacterProcessorFactory? characterFactory,
             DialogueState state,
             ISentenceSplitter sentenceSplitter)
         {
-            var characterProcessors = characterFactory.CreateProcessorsForCharacter(line, out var markup);
+            string text;
 
-            foreach (var processor in characterProcessors)
-                Processors.Add(processor);
+            if (characterFactory != null)
+            {
+                var characterProcessors = characterFactory.CreateProcessorsForCharacter(line, out var markup);
 
-            var text = markup.Text;
+                foreach (var processor in characterProcessors)
+                    Processors.Add(processor);
+
+                text = markup.Text;
+            }
+            else
+            {
+                text = line.Text.Text;
+            }
+
             IDialogueCustomDraw? customProcessor = null;
             var currentLine = new StringBuilder();
             var letterBuffer = new StringBuilder(1);

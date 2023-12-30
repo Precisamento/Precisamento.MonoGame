@@ -99,7 +99,7 @@ namespace Examples.Scenes.DialogueTest
 
             foreach (var node in runner.Dialogue.NodeNames)
             {
-                var button = new ButtonComponent(ui, "Normal", "Hover", "Press");
+                var button = new ButtonComponent(ui, "Normal", "Hover", "Press", null);
                 button.Clicked += () =>
                 {
                     var recorder = SceneManager.CurrentScene.Recorder;
@@ -172,7 +172,7 @@ namespace Examples.Scenes.DialogueTest
             var entity = world.CreateEntity();
 
             var dialogue = new DialogueBoxBuilder(game)
-                .SetBackground(ui.Animations["Normal"].Frames[0])
+                .SetBackground(ui.Animations["Normal"])
                 .SetBounds(new Rectangle(10, 200, 300, 100))
                 .SetTextColor(Color.White)
                 .SetPadding(new Thickness(10))
