@@ -5,6 +5,8 @@ using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.MathHelpers;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +17,7 @@ namespace Precisamento.MonoGame.UI
     {
         private bool _initialized;
 
-        private Control? _parent;
+        private Container? _parent;
         private GameWindow? _window;
         private bool _inTree;
 
@@ -135,6 +137,19 @@ namespace Precisamento.MonoGame.UI
 
         }
 
+        public bool IsAncestorOf(Control control)
+        {
+            while (control._parent != null)
+            {
+                if (control._parent == this)
+                    return true;
+
+                control = control._parent;
+            }
+
+            return false;
+        }
+
         private bool VisibleInTree()
         {
             throw new NotImplementedException();
@@ -155,12 +170,14 @@ namespace Precisamento.MonoGame.UI
             throw new NotImplementedException();
         }
 
-        private Transform2 GetInternalTransform()
+        private Matrix GetInternalTransform()
         {
-            //Transform2 rotScale = new Transform2(rotation: _rotation, scale: _scale);
-            //Transform2 offset = new Transform2(position: -_pivotOffset);
-
-            return new Transform2(-_pivotOffset, _rotation, _scale);
+            return
+                Matrix.CreateTranslation(new Vector3(-_pivotOffset, 0f))
+                * Matrix.CreateRotationZ(_rotation)
+                * Matrix.CreateScale(new Vector3(_scale, 1f))
+                * Matrix.CreateTranslation(new Vector3(_pivotOffset, 0f));
+ 
         }
 
         private void UpdateConfigurationWarnings()
@@ -558,14 +575,65 @@ namespace Precisamento.MonoGame.UI
             //  
         }
 
-        private void WindowFindFocusNeighbor(Vector2 dir, object at, Point points, float min, ref float closest_dist, out Control closest)
+        private void WindowFindFocusNeighbor(Vector2 dir, Control? control, Vector2[] points, float min, ref float closest_dist, ref Control? closest)
         {
-            throw new NotImplementedException();
-        }
+            if (control is null)
+            {
+                closest = null;
+                return;
+            }
 
-        private Control GetFocusNeighbor(Side side, int count = 0)
-        {
-            throw new NotImplementedException();
+            if (control.GetFocusMode() == FocusMode.All && control.VisibleInTree())
+            {
+                var rect = control.GetRect();
+
+                var otherPoints = new Vector2[]
+                {
+                    rect.Location.ToVector2(),
+                    new Vector2(rect.X + rect.Width),
+                    (rect.Location + rect.Size).ToVector2(),
+                    new Vector2(rect.X, rect.Y + rect.Height)
+                };
+
+                var otherMin = 1e7;
+
+                for(var i = 0; i < 4; i++)
+                {
+                    var d = dir.Dot(otherPoints[i]);
+                    if (d < otherMin)
+                        otherMin = d;
+                }
+
+                if (otherMin > (min - MathExt.Epsilon))
+                {
+                    for (var i = 0; i < 4; i++)
+                    {
+                        var la = points[i];
+                        var lb = points[(i + 1) % 4];
+
+                        for (var j = 0; j < 4; j++)
+                        {
+                            var fa = otherPoints[j];
+                            var fb = otherPoints[(j + 1) % 4];
+                            var d = Collisions.CollisionChecks.GetClosestPointsBetweenLines(la, lb, fa, fb, out _, out _);
+
+                            if (d < closest_dist)
+                            {
+                                closest_dist = d;
+                                closest = control;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (control is Container container)
+            {
+                foreach (var child in container.Children)
+                {
+                    WindowFindFocusNeighbor(dir, child, points, min, ref closest_dist, ref closest);
+                }
+            }
         }
 
         private void ThemeChanged()
@@ -686,11 +754,9 @@ namespace Precisamento.MonoGame.UI
             return parentRect;
         }
         
-        public virtual Transform2 GetTransform()
+        public virtual Matrix GetTransform()
         {
-            var transform = GetInternalTransform();
-            transform.Position += GetPosition().ToVector2();
-            return transform;
+            return GetInternalTransform() * Matrix.CreateTranslation(new Vector3(GetPosition().ToVector2(), 0f));
         }
 
         public void SetAnchor(Side side, float anchor, bool keepOffset = true, bool pushOppositeAnchor = true) 
@@ -1177,7 +1243,7 @@ namespace Precisamento.MonoGame.UI
 
         public void SetGrowDirectionPreset(LayoutPreset preset)
         {
-            GuiSystem.ThreadGuard();
+            GuiSystem?.ThreadGuard();
 
             // Select correct horizontal grow direction.
             switch (preset)
@@ -1254,24 +1320,17 @@ namespace Precisamento.MonoGame.UI
             SizeChanged();
         }
 
-        public void SetGlobalPosition(Point position, bool keepOffsets = false)
-        {
-            throw new NotImplementedException();
-        }
-
         public Point GetPosition()
         {
             return _posCache;
         }
 
-        public Point GetGlobalPosition()
-        {
-            throw new NotImplementedException();
-        }
-
         public Point GetScreenPosition()
         {
-            throw new NotImplementedException();
+            if (!InTree)
+                throw new InvalidOperationException();
+
+            return GuiSystem!.Camera.WorldToScreen(GetPosition().ToVector2()).ToPoint();
         }
 
         public void SetSize(Point size, bool keepOffsets = false)
@@ -1327,22 +1386,27 @@ namespace Precisamento.MonoGame.UI
         public Rectangle GetRect()
         {
             var transform = GetTransform();
-            return new Rectangle(transform.Position.ToPoint(), (transform.Scale * GetSize().ToVector2()).ToPoint());
-        }
-
-        public Rectangle GetGlobalRect()
-        {
-            var transform = GetGlobalTransform();
-            return new Rectangle(transform.Position.ToPoint(), (transform.Scale * GetSize().ToVector2()).ToPoint());
+            var position = Vector2.Zero;
+            var size = GetSize().ToVector2();
+            Vector2.Transform(ref position, ref transform, out position);
+            Vector2.Transform(ref size, ref transform, out size);
+            return new Rectangle(position.ToPoint(), size.ToPoint());
         }
 
         public Rectangle GetScreenRect()
         {
             if (!InTree)
                 throw new InvalidOperationException();
+            var rect = GetRect();
+            var topLeft = rect.Location.ToVector2();
+            var bottomRight = topLeft + rect.Size.ToVector2();
 
-            var transform = GetScreenTransform();
-            return new Rectangle(transform.Position.ToPoint(), (transform.Scale * GetSize().ToVector2()).ToPoint());
+            var transformedTopLeft = GuiSystem!.Camera.WorldToScreen(topLeft);
+            var transformedBottomRight = GuiSystem!.Camera.WorldToScreen(bottomRight);
+
+            var size = transformedBottomRight - transformedTopLeft;
+
+            return new Rectangle(transformedTopLeft.ToPoint(), size.ToPoint());
         }
 
         public Rectangle GetAnchorableRect()
@@ -1561,49 +1625,79 @@ namespace Precisamento.MonoGame.UI
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Determines if the control contains the point that is relative to the control position.
+        /// </summary>
         public virtual bool HasPoint(Point point)
         {
-            throw new NotImplementedException();
+            return new Rectangle(Point.Zero, GetSize()).Contains(point);
         }
 
         public void SetMouseFilter(MouseFilter filter) 
-        { 
-            throw new NotImplementedException();
+        {
+            GuiSystem?.ThreadGuard();
+
+            if (_mouseFilter == filter)
+                return;
+
+            GuiSystem?.UpdateGuiMouseOver();
         }
 
         public MouseFilter GetMouseFilter()
         {
-            throw new NotImplementedException();
+            return _mouseFilter;
         }
 
         public void SetForcePassScrollEvents(bool forcePassScrollEvents)
         {
-            throw new NotImplementedException();
+            GuiSystem?.ThreadGuard();
+
+            _forcePassScrollEvents = forcePassScrollEvents;
         }
 
         public bool GetForcePassScrollEvents()
         {
-            throw new NotImplementedException();
+            return _forcePassScrollEvents;
         }
 
+        /// <summary>
+        /// Warps the mouse relative to this controls position.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <exception cref="InvalidOperationException">Thrown if the control is not in the world yet.</exception>
         public void WarpMouse(Point position)
         {
-            throw new NotImplementedException();
+            if (!InTree)
+                throw new InvalidOperationException();
+
+            var relativePosition = GetPosition();
+
+            GuiSystem!.ThreadGuard();
+            GuiSystem!.WarpMouse(relativePosition + position);
         }
 
         public bool IsFocusOwnerInShortcutContext()
         {
-            throw new NotImplementedException();
+            if (_shortcutContext is null)
+                return true;
+
+            var focusedControl = GuiSystem?.GetFocusedControl();
+            if (focusedControl is null)
+                return false;
+
+            return focusedControl == _shortcutContext || _shortcutContext.IsAncestorOf(focusedControl);
         }
 
-        public void SetShortcutContext(Control context)
+        public void SetShortcutContext(Control? context)
         {
-            throw new NotImplementedException();
+            GuiSystem?.ThreadGuard();
+
+            _shortcutContext = context;
         }
 
-        public Control GetShortcutContext()
+        public Control? GetShortcutContext()
         {
-            throw new NotImplementedException();
+            return _shortcutContext;
         }
 
         public virtual void SetDragForwarding(Action drag, Action canDrop, Action drop)
@@ -1643,112 +1737,419 @@ namespace Precisamento.MonoGame.UI
 
         public void SetFocusMode(FocusMode focusMode)
         {
-            throw new NotImplementedException();
+            GuiSystem?.ThreadGuard();
+
+            if (InTree && focusMode == FocusMode.None && _focusMode != FocusMode.None && HasFocus())
+            {
+                ReleaseFocus();
+            }
+
+            _focusMode = focusMode;
         }
 
         public FocusMode GetFocusMode()
         {
-            throw new NotImplementedException();
+            return _focusMode;
         }
 
         public bool HasFocus()
         {
-            throw new NotImplementedException();
+            return GuiSystem?.GetFocusedControl() == this;
         }
 
         public void GrabFocus()
         {
-            throw new NotImplementedException();
+            GuiSystem?.ThreadGuard();
+
+            if (_focusMode == FocusMode.None)
+            {
+                return;
+            }
+
+            GuiSystem?.GrabFocus(this);
         }
 
         public void GrabClickFocus()
         {
-            throw new NotImplementedException();
+            GuiSystem?.ThreadGuard();
+
+            GuiSystem?.GrabClickFocus(this);
         }
 
         public void ReleaseFocus()
         {
-            throw new NotImplementedException();
+            GuiSystem?.ThreadGuard();
+
+            if (!HasFocus())
+                return;
+
+            GuiSystem?.ReleaseFocus();
         }
 
-        public Control FindNextValidFocus()
+        private static Control? NextControl(Control from)
         {
-            throw new NotImplementedException();
+            if (from._parent is null)
+                return null;
+
+            var parent = from._parent;
+            var next = parent.Children.IndexOf(from);
+
+            if (next == -1)
+                throw new InvalidOperationException();
+
+            for (var i = next + 1; i < parent.Children.Count; i++)
+            {
+                var control = parent.Children[i];
+                if (!control.VisibleInTree() || control.IsTopLevelControl())
+                {
+                    continue;
+                }
+
+                return control;
+            }
+
+            // No next parent, try the same in parent.
+
+            return NextControl(parent);
         }
 
-        public Control FindPreviousValidFocus()
+        public Control? FindNextValidFocus()
         {
-            throw new NotImplementedException();
+            var control = this;
+
+            while (true)
+            {
+                if (control.FocusNext != null)
+                {
+                    if (control.FocusNext.VisibleInTree() && control.FocusNext.GetFocusMode() != FocusMode.None)
+                    {
+                        return control.FocusNext;
+                    }
+                }
+
+                Control? nextChild = null;
+                if (control is Container container)
+                {
+                    foreach(var child in container.Children)
+                    {
+                        if (!child.VisibleInTree() || child.IsTopLevelControl())
+                        {
+                            continue;
+                        }
+
+                        nextChild = child;
+                    }
+                }
+
+                if (nextChild is null)
+                {
+                    nextChild = NextControl(control);
+                }
+
+                if (nextChild is null)
+                {
+                    while (nextChild != null && !nextChild.IsTopLevelControl())
+                    {
+                        nextChild = nextChild._parent;
+                    }
+                }
+
+                if (nextChild == control || nextChild == this)
+                {
+                    return GetFocusMode() == FocusMode.All ? nextChild : null;
+                }
+
+                if (nextChild != null)
+                {
+                    if (nextChild.GetFocusMode() == FocusMode.All)
+                    {
+                        return nextChild;
+                    }
+                    control = nextChild;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return null;
         }
 
-        public Control FindValidFocusNeighbor(Side side)
+        private static Control PrevControl(Control from)
         {
-            throw new NotImplementedException();
+            Control? child = null;
+            if (from is Container container)
+            {
+                for (var i = container.Children.Count -1; i >= 0; i--)
+                {
+                    var control = container.Children[i];
+
+                    if (!container.VisibleInTree() || control.IsTopLevelControl())
+                    {
+                        continue;
+                    }
+
+                    child = control;
+                    break;
+                }
+            }
+
+            if (child is null)
+                return from;
+
+
+            // No prev in parent, try the same in parent.
+            return PrevControl(child);
         }
 
-        public void SetFocusNeighbor(Side side, Control control)
+        public Control? FindPreviousValidFocus()
         {
-            throw new NotImplementedException();
+            var control = this;
+            while (true)
+            {
+                if (control.FocusPrevious != null)
+                {
+                    if (control.FocusPrevious.VisibleInTree() && control.FocusPrevious.GetFocusMode() != FocusMode.None)
+                    {
+                        return control.FocusPrevious;
+                    }    
+                }
+
+                Control? prevChild = null;
+
+                if (control.IsTopLevelControl())
+                {
+                    prevChild = PrevControl(control);
+                }
+                else
+                {
+                    var index = _parent!.Children.IndexOf(this);
+
+                    for (var i = index - 1; i  >= 0; i--)
+                    {
+                        var child = _parent.Children[i];
+                        if (!child.VisibleInTree() || child.IsTopLevelControl())
+                        {
+                            continue;
+                        }
+
+                        prevChild = child;
+                        break;
+                    }
+
+                    if (prevChild is null)
+                    {
+                        prevChild = _parent;
+                    }
+                    else
+                    {
+                        prevChild = PrevControl(prevChild);
+                    }
+                }
+
+                if (prevChild == control || prevChild == this)
+                {
+                    return GetFocusMode() == FocusMode.All ? prevChild : null;
+                }
+
+                if (prevChild != null)
+                {
+                    if (prevChild.GetFocusMode() == FocusMode.All)
+                    {
+                        return prevChild;
+                    }
+
+                    control = prevChild;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return null;
         }
 
-        public Control GetFocusNeighbor(Side side)
+        private const int MAX_NEIGHBOR_SEARCH_COUNT = 512;
+
+        private Control? FindFocusNeighbor(Side side, int count = 0)
         {
-            throw new NotImplementedException();
+            if (count >= MAX_NEIGHBOR_SEARCH_COUNT)
+                return null;
+
+            var neighbor = GetFocusNeighbor(side);
+
+            if (neighbor != null)
+            {
+                if (!neighbor.VisibleInTree() || neighbor.GetFocusMode() == FocusMode.None)
+                {
+                    return neighbor.FindFocusNeighbor(side, count + 1);
+                }
+
+                return neighbor;
+            }
+
+            float distance = 1e7f;
+            Control? result = null;
+
+            var rect = GetRect();
+            var points = new Vector2[]
+            {
+                rect.Location.ToVector2(),
+                new Vector2(rect.X + rect.Size.X, rect.Y),
+                (rect.Location + rect.Size).ToVector2(),
+                new Vector2(rect.X, rect.Y + rect.Size.Y)
+            };
+
+            var dir = side switch
+            {
+                Side.Top => new Vector2(0, -1),
+                Side.Left => new Vector2(-1, 0),
+                Side.Bottom => new Vector2(0, 1),
+                _ => new Vector2(1, 0)
+            };
+
+            float maxDistance = -1e7f;
+            for (var i = 0; i < 4; i++)
+            {
+                var d = dir.Dot(points[i]);
+                if (d > maxDistance)
+                    maxDistance = d;
+            }
+
+            var control = this;
+            while (control._parent != null)
+            {
+                control = control._parent;
+            }
+
+            WindowFindFocusNeighbor(dir, control, points, maxDistance, ref distance, ref result);
+
+            return result;
         }
 
-        public void SetFocusNext(Control control)
+        public Control? FindValidFocusNeighbor(Side side)
         {
-            throw new NotImplementedException();
+            return FindFocusNeighbor(side, 0);
         }
 
-        public Control GetFocusNext()
+        public void SetFocusNeighbor(Side side, Control? control)
         {
-            throw new NotImplementedException();
+            GuiSystem?.ThreadGuard();
+            switch(side)
+            {
+                case Side.Top:
+                    NeighborTop = control;
+                    break;
+                case Side.Left:
+                    NeighborLeft = control;
+                    break;
+                case Side.Bottom:
+                    NeighborBottom = control;
+                    break;
+                case Side.Right:
+                    NeighborRight = control;
+                    break;
+            }
         }
 
-        public void SetFocusPrevious(Control control)
+        public Control? GetFocusNeighbor(Side side)
         {
-            throw new NotImplementedException();
+            return side switch
+            {
+                Side.Top => NeighborTop,
+                Side.Left => NeighborLeft,
+                Side.Bottom => NeighborBottom,
+                Side.Right => NeighborRight,
+                _ => null
+            };
         }
 
-        public Control GetFocusPrevious()
+        public void SetFocusNext(Control? control)
         {
-            throw new NotImplementedException();
+            GuiSystem?.ThreadGuard();
+
+            FocusNext = control;
+        }
+
+        public Control? GetFocusNext()
+        {
+            return FocusNext;
+        }
+
+        public void SetFocusPrevious(Control? control)
+        {
+            GuiSystem?.ThreadGuard();
+
+            FocusPrevious = control;
+        }
+
+        public Control? GetFocusPrevious()
+        {
+            return FocusPrevious;
         }
 
         public void SetDefaultCursorShape(CursorShape shape)
         {
-            throw new NotImplementedException();
+            GuiSystem?.ThreadGuard();
+
+            if (_defaultCursorShape == shape)
+                return;
+
+            _defaultCursorShape = shape;
+
+            if (!InTree)
+                return;
+
+            if (!GetScreenRect().Contains(GuiSystem!.Input.MousePosition))
+            {
+                return;
+            }
+
+            GuiSystem!.UpdateMouseCursorState();
         }
 
         public CursorShape GetDefaultCursorShape()
         {
-            throw new NotImplementedException();
+            return _defaultCursorShape;
         }
 
         public virtual CursorShape GetCursorShape()
         {
-            throw new NotImplementedException();
+            return _defaultCursorShape;
         }
 
         public void SetClipContents(bool clip)
         {
-            throw new NotImplementedException();
+            GuiSystem?.ThreadGuard();
+
+            if (_clipContents == clip)
+                return;
+
+            _clipContents = clip;
+            QueueRedraw();
         }
 
         public bool GetClipContents()
         {
-            throw new NotImplementedException();
+            return _clipContents;
         }
 
         public void SetDisableVisibilityClip(bool ignore)
         {
-            throw new NotImplementedException();
+            GuiSystem?.ThreadGuard();
+
+            if (_disableVisibilityClip = ignore)
+                return;
+
+            _disableVisibilityClip = ignore;
+            QueueRedraw();
         }
 
         public bool GetDisableVisibilityClip()
         {
-            throw new NotImplementedException();
+            return _disableVisibilityClip;
         }
 
         public void SetThemeOwner(object obj)

@@ -7,6 +7,7 @@ using Precisamento.MonoGame.Dialogue;
 using Precisamento.MonoGame.Dialogue.Options;
 using Precisamento.MonoGame.Graphics;
 using Precisamento.MonoGame.Input;
+using Precisamento.MonoGame.MathHelpers;
 using Precisamento.MonoGame.Resources;
 using Precisamento.MonoGame.Scenes;
 using Precisamento.MonoGame.Systems.Debugging;
@@ -23,6 +24,77 @@ namespace Playground
 {
     public static class SceneLoader
     {
+        public static Scene LoadTestScene(Game game)
+        {
+            var world = new World();
+
+            var rect = new Rectangle(0, 0, 64, 32);
+            var position = new Vector2(32, 32);
+            var rotation = MathHelper.ToRadians(45);
+            var origin = new Vector2(0, 16);
+            var scale = new Vector2(2, 2);
+
+            var baseTransform =
+                Matrix.CreateTranslation(new Vector3(-origin, 0f)) *
+                Matrix.CreateRotationZ(rotation) *
+                Matrix.CreateScale(new Vector3(scale, 1f)) *
+                Matrix.CreateTranslation(new Vector3(origin, 0f));
+
+            var translation = Matrix.CreateTranslation(new Vector3(position, 0f));
+
+            var positionFirst = translation * baseTransform;
+
+            var positionSecond = baseTransform * translation;
+
+            var location = rect.Location.ToVector2();
+
+            var pointsFirst = new List<Vector2>()
+            {
+                Vector2.Transform(location, positionFirst),
+                Vector2.Transform(location + new Vector2(rect.Width, 0), positionFirst),
+                Vector2.Transform(location + rect.Size.ToVector2(), positionFirst),
+                Vector2.Transform(location + new Vector2(0, rect.Height), positionFirst),
+                Vector2.Transform(location, positionFirst)
+            };
+
+            var pointsSecond = new List<Vector2>()
+            {
+                Vector2.Transform(location, positionSecond),
+                Vector2.Transform(location + new Vector2(rect.Width, 0), positionSecond),
+                Vector2.Transform(location + rect.Size.ToVector2(), positionSecond),
+                Vector2.Transform(location + new Vector2(0, rect.Height), positionSecond),
+                Vector2.Transform(location, positionSecond)
+            };
+
+            var scene = new Scene(
+                world,
+                new ISystem<float>[]
+                {
+
+                },
+                new ISystem<SpriteBatchState>[]
+                {
+                    new ActionSystem<SpriteBatchState>((state) =>
+                    {
+                        for (var i = 0; i < 4; i++)
+                        {
+                            state.SpriteBatch.DrawLine(pointsFirst[i], pointsFirst[i + 1], Color.Red);
+
+                            state.SpriteBatch.DrawLine(pointsSecond[i], pointsSecond[i + 1], Color.Blue);
+                        }
+
+
+                        state.SpriteBatch.DrawCircle(new Vector2(32, 48), 5, 16, Color.Purple);
+                    })
+                },
+                new ISystem<SpriteBatchState>[]
+                {
+
+                });
+
+            return scene;
+        }
+
         public static Scene LoadMainScene(Game game)
         {
             var resources = game.Services.GetService<IResourceLoader>();

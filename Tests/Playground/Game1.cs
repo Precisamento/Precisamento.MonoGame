@@ -69,7 +69,7 @@ namespace Playground
 
             SceneManager.ViewportAdapter = new BoxingViewportAdapter(Window, GraphicsDevice, 400, 225);
 
-            var scene = SceneLoader.LoadMainScene(this);
+            var scene = SceneLoader.LoadTestScene(this);
 
             SceneManager.ChangeScene(scene);
 

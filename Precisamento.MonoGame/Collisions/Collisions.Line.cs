@@ -1,7 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 using Precisamento.MonoGame.MathHelpers;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text;
 
 namespace Precisamento.MonoGame.Collisions
@@ -245,6 +247,89 @@ namespace Precisamento.MonoGame.Collisions
             Vector2.Normalize(ref mtv, out result.Normal);
 
             return true;
+        }
+
+        public static float GetClosestPointsBetweenLines(Vector2 p1, Vector2 q1, Vector2 p2, Vector2 q2, out Vector2 c1, out Vector2 c2)
+        {
+            Vector2 d1 = q1 - p1;
+            Vector2 d2 = q2 - p2;
+
+            Vector2 r = p1 - p2;
+
+            var a = d1.Dot(d1);
+            var e = d2.Dot(d2);
+            var f = d2.Dot(r);
+
+            float s;
+            float t;
+
+            // Check if either or both segments are points.
+
+            if (a <= MathExt.Epsilon && e <= MathExt.Epsilon)
+            {
+                // Both segments degenerate into points.
+                c1 = p1;
+                c2 = p2;
+
+                return MathF.Sqrt((c1 - c2).Dot(c1 - c2));
+            }
+
+            if (a <= MathExt.Epsilon)
+            {
+                // First segment degenerates into a point.
+                s = 0;
+                t = f / e;
+                t = Math.Clamp(t, 0f, 1f);
+            }
+            else
+            {
+                var c = d1.Dot(r);
+                if (e <= MathExt.Epsilon)
+                {
+                    // Second segment degenerates into a point.
+                    t = 0;
+                    s = Math.Clamp(-c / a, 0, 1);
+                }
+                else
+                {
+                    // The general nondegenerate case starts here.
+                    var b = d1.Dot(d2);
+                    var denom = a * e - b * b;
+                    // If segments not parallel, compute closest point on L1 to L2 and
+                    // clamp to segment S1. Else pick arbitrary s (here 0).
+                    if (denom != 0)
+                    {
+                        s = Math.Clamp((b * f - c * e) / denom, 0f, 1f);
+                    }
+                    else
+                    {
+                        s = 0;
+                    }
+
+                    // Compute point on L2 closest to S1(s) using
+                    // t = Dot((P1 + D1*s) - P2,D2) / Dot(D2,D2) = (b*s + f) / e
+                    t = (b * s + f) / e;
+
+                    //If t in [0,1] done. Else clamp t, recompute s for the new value
+                    // of t using s = Dot((P2 + D2*t) - P1,D1) / Dot(D1,D1)= (t*b - c) / a
+                    // and clamp s to [0, 1].
+                    if (t < 0)
+                    {
+                        t = 0;
+                        s = Math.Clamp(-c / a, 0, 1);
+                    }
+                    else if (t > 1)
+                    {
+                        t = 1;
+                        s = Math.Clamp((b - c) / a, 0, 1);
+                    }
+                }
+            }
+
+            c1 = p1 + d1 * s;
+            c2 = p2 + d2 * s;
+
+            return MathF.Sqrt((c1 - c2).Dot(c1 - c2));
         }
     }
 }
