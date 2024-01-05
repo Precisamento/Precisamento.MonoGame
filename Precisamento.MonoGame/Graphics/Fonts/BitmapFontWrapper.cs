@@ -19,6 +19,28 @@ namespace Precisamento.MonoGame.Graphics
             Font = font;
         }
 
+        public static BitmapFontWrapper FromSprite(Sprite sprite, int? spacing, int? lineHeight = null)
+        {
+            var glyphs = new List<BitmapFontRegion>();
+            var height = 0;
+
+            foreach(var animation in sprite.AnimationList)
+            {
+                if (animation.Name.Length != 1 || animation.Frames.Count != 1)
+                    continue;
+
+                var glyph = new BitmapFontRegion(animation.Frames[0], animation.Name[0], 0, 0, animation.Frames[0].Width);
+                glyphs.Add(glyph);
+
+                height = Math.Max(animation.Frames[0].Height, height);
+            }
+
+            var font = new BitmapFont(sprite.Name, glyphs, lineHeight ?? height);
+            font.LetterSpacing = spacing ?? 2;
+
+            return new BitmapFontWrapper(font);
+        }
+
         public Vector2 MeasureString(string text)
         {
             return Font.MeasureString(text);

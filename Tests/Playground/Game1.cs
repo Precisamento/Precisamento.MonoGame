@@ -10,6 +10,7 @@ using Precisamento.MonoGame.Logging;
 using Precisamento.MonoGame.Resources;
 using Precisamento.MonoGame.Scenes;
 using Precisamento.MonoGame.Systems.Debugging;
+using Precisamento.MonoGame.UI;
 using Precisamento.MonoGame.YarnSpinner;
 using System;
 using System.Collections.Generic;
@@ -68,6 +69,17 @@ namespace Playground
             Services.AddService(_spriteBatchState);
 
             SceneManager.ViewportAdapter = new BoxingViewportAdapter(Window, GraphicsDevice, 400, 225);
+
+            var input = Services.GetService<InputManager>();
+
+            var camera = new OrthographicCamera(SceneManager.ViewportAdapter);
+            var gui = new Gui(camera, input, this);
+            var control = new Control();
+
+            control.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+            gui.Root = control;
+
+            gui.UpdateLayout();
 
             var scene = SceneLoader.LoadTestScene(this);
 

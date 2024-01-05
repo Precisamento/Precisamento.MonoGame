@@ -14,7 +14,7 @@ namespace Precisamento.MonoGame.Resources
     {
         private static class Loader<T>
         {
-            public static ResourceTypeReader<T> Reader;
+            public static ResourceTypeReader<T>? Reader;
         }
 
         public static void RegisterLoader<T>(ResourceTypeReader<T> reader)
@@ -28,8 +28,8 @@ namespace Precisamento.MonoGame.Resources
             RegisterLoader<DialogueData>(new DialogueReader());
         }
 
-        private Dictionary<string, object> _loadedResources = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-        private List<IDisposable> _disposableResources = new List<IDisposable>();
+        private Dictionary<string, object> _loadedResources = new(StringComparer.OrdinalIgnoreCase);
+        private List<IDisposable> _disposableResources = new();
         private bool _disposed;
 
         public ContentManager Content { get; }
@@ -67,9 +67,9 @@ namespace Precisamento.MonoGame.Resources
 
                 name = name.Replace('\\', '/');
 
-                if (_loadedResources.TryGetValue(name, out var asset) && asset is T)
+                if (_loadedResources.TryGetValue(name, out var asset) && asset is T concrete)
                 {
-                    return (T)asset;
+                    return concrete;
                 }
 
                 T result = ReadResource<T>(name) ?? throw new InvalidOperationException($"Failed to read resource {name}");
@@ -93,7 +93,7 @@ namespace Precisamento.MonoGame.Resources
 
         private T ReadResource<T>(string name)
         {
-            name = Path.Combine(Content.RootDirectory, name) + Loader<T>.Reader.FileExtension;
+            name = Path.Combine(Content.RootDirectory, name) + Loader<T>.Reader!.FileExtension;
 
             Stream stream;
             try

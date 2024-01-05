@@ -20,8 +20,8 @@ namespace Precisamento.MonoGame.Input
         private float[] _rightAxisDeadZones = new float[GamePad.MaximumGamePadCount];
         private List<int> _connectedGamePads = new List<int>();
 
-        public event EventHandler<int> GamePadConnected;
-        public event EventHandler<int> GamePadDisconnected;
+        public event EventHandler<int>? GamePadConnected;
+        public event EventHandler<int>? GamePadDisconnected;
 
         public IReadOnlyList<int> ConnectedGamePads => _connectedGamePads;
         public Point MousePosition => _mouseCurrent.Position;

@@ -2,6 +2,7 @@
 using DefaultEcs.System;
 using Examples.Scenes.CollisionTest;
 using Examples.Scenes.DialogueTest;
+using Examples.Scenes.GuiTest;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -37,6 +38,7 @@ namespace Examples.Scenes.TestMenu
 
             var actions = new List<(string, Func<Game, Scene>)>()
             {
+                ("GUI", GuiScene.Load),
                 ("Simple Collisions", CollisionScene.Load),
                 ("Dialogue", DialogueScene.Load)
             };

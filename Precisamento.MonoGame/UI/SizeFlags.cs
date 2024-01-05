@@ -13,6 +13,7 @@ namespace Precisamento.MonoGame.UI
         Expand = 2,
         ExpandFill = 3,
         ShrinkCenter = 4,
-        ShrinkEnd = 8
+        ShrinkEnd = 8,
+        All = 15
     }
 }
